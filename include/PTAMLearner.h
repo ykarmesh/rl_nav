@@ -6,14 +6,15 @@
 
 #include <gazebo_msgs/ModelStates.h>
 #include <pcl_ros/point_cloud.h>
+#include <geometry_msgs/PoseStamped.h>
 
 #include "SarsaLearner.h"
 #include "SupervisedLearner.h"
 
 using namespace std;
 
-typedef tuple<vector<float>, vector<int>, float> CommandStateActionQ;
-static CommandStateActionQ nullTuple = make_tuple(vector<float>(), vector<int>(), -numeric_limits<float>::infinity());
+typedef tuple<geometry_msgs::PoseStamped, vector<int>, float> CommandStateActionQ;
+static CommandStateActionQ nullTuple = make_tuple(geometry_msgs::PoseStamped(), vector<int>(), -numeric_limits<float>::infinity());
 
 class PTAMLearner : public SarsaLearner, public SupervisedLearner
 {
@@ -33,15 +34,15 @@ private:
 public:	
 	PTAMLearner();
 
-	CommandStateActionQ getAction(vector<float> input);
+	CommandStateActionQ getAction(geometry_msgs::PoseStamped inputPose);
 	CommandStateActionQ getRandomStateAction();
 	CommandStateActionQ getThresholdedRandomStateAction(float qThreshold, int maxIters);
-	CommandStateActionQ getBestQStateAction(vector<float> lastCommand);
-	CommandStateActionQ getEpsilonGreedyStateAction(float epsilon, vector<float> lastCommand);
-	CommandStateActionQ getThresholdedClosestAngleStateAction(float qThreshold, float nextAngle, vector<float> lastCommand);
+	CommandStateActionQ getBestQStateAction(geometry_msgs::PoseStamped lastPose);
+	CommandStateActionQ getEpsilonGreedyStateAction(float epsilon, geometry_msgs::PoseStamped lastPose);
+	CommandStateActionQ getThresholdedClosestAngleStateAction(float qThreshold, float nextAngle, geometry_msgs::PoseStamped lastPose);
 	CommandStateActionQ getSLClosestAngleStateAction(float nextAngle);
 	CommandStateActionQ getSLRandomStateAction();
-	CommandStateActionQ getBestSLStateAction(vector<float> lastCommand);
+	CommandStateActionQ getBestSLStateAction(geometry_msgs::PoseStamped lastPose);
 	vector<CommandStateActionQ> getSLActions();
 	void clear();
 	void getActions();

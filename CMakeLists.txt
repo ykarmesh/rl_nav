@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   joy
   gazebo_ros
   tf
+  actionlib_msgs
 
 )
 

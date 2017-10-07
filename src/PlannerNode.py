@@ -18,6 +18,7 @@ import time
 
 class PLanner2D(object):
 
+	#initialization function
 	def __init__(self):
 
 		self.state = 0
@@ -147,18 +148,19 @@ class PLanner2D(object):
 			traj_list = traj_list + traj
 		return traj_list
 
+	#get classified trajectory from rl_algo
 	def receiveUnsafeTrajs(self, trajectories):
 		self.rlUnsafePath.pose = self.robotPTAMWorldPose
 		print "UNSAFE", int(trajectories.data[-1])
 		self.rlUnsafePath.points = self.trajjer(trajectories.data)
 		
-
+	#get classified trajectory from rl_algo
 	def receiveSafeTrajs(self, trajectories):
 		self.rlSafePath.pose = self.robotPTAMWorldPose
 		print "SAFE", int(trajectories.data[-1])
 		self.rlSafePath.points = self.trajjer(trajectories.data)
 		
-
+	# Give slam's pose to the class variable
 	def receivePTAMPose(self, pose):
 		self.robotPTAMWorldPose = pose.pose
 
@@ -178,7 +180,7 @@ class PLanner2D(object):
 
 		self.lookahead_path_pub.publish(self.lookaheadPath)
 
-
+	#recieve bernstein's goal
 	def receiveGoal(self, goalPose):
 		if self.state==0 and self.points!=[]:
 			self.goalPose = goalPose
@@ -195,6 +197,7 @@ class PLanner2D(object):
 			print 'received goal', self.goal
 			self.receiveInputGlobal(Empty())
 
+	#recieve bernstein's waypoint
 	def receiveWaypoint(self, waypointPose):
 		ps = PoseStamped()
 		ps.header = waypointPose.header
@@ -209,6 +212,7 @@ class PLanner2D(object):
 										waypointPose.pose.orientation.w])[2]), self.tf/2]
 			print 'received waypoint', self.points
 
+	#get gazebo model's current pose
 	def receiveGazeboModelStates(self,modelStates):
 		self.robotState = modelStates.pose[-1]
 
@@ -456,7 +460,7 @@ class PLanner2D(object):
 						0.0,0.0,0.0,0.0,0.0,0.0]
 		return ExpectedPathResponse(message)
 				
-
+	#Robot's SLAM is breaking, stop the robot
 	def receiveBreak(self, empty):
 		self.state = 0
 		# self.goalPose = None
