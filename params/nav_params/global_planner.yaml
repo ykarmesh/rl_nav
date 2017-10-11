@@ -1,0 +1,14 @@
+max_footprint_cost: 128
+Inscribed_radius: 0.2
+Circumscribed_radius: 0.2
+max_dist_bw_poses: 0.1
+intermediate_poses: true
+recovery_behavior_enabled: false
+clearing_rotation_allowed: false
+
+GlobalPlanner: 
+
+  neutral_cost: 66
+  cost_factor: 0.55
+  lethal_cost: 253
+  

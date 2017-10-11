@@ -70,11 +70,11 @@ class Helper
 	static int MAP;
 
 	void poseCb(const geometry_msgs::PoseStampedPtr posePtr);
-	//void ptamInfoCb(const ptam_com::ptam_infoPtr ptamInfoPtr);
-	void ptamInfoCb(const std_msgs::BoolPtr ptamInfoPtr);
+	//void ptamInfoCb(const ptam_com::ptam_infoPtr ptamInfoPtr);	
+	void ptamInfoCb(const std_msgs::BoolPtr ptamInfoPtr);	
 	void gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelStatesPtr);
 	void pointCloudCb(const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloudPtr);
-	void OccupancyGridCb(const nav_msgs::OccupancyGrid::ConstPtr &OGPtr);
+	void OccupancyGridCb(const nav_msgs::OccupancyGrid::ConstPtr &OGPtr);	
 
 public:
 	Helper();
@@ -89,8 +89,7 @@ public:
 	static vector<vector<vector<int> > > readFeatureExpectation(string fileName);
 	static int sign(float x);
 	static nav_msgs::OccupancyGrid grid;
-	static tf::TransformListener* listener;
-
+	
 	static constexpr char* MAP_FRAME_ID = "world";
 	static constexpr char* NAV_FRAME_ID = "world2D";
 	static constexpr char* GAZEBO_FRAME_ID = "base_link";

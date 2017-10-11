@@ -21,8 +21,6 @@
 #include <std_msgs/Empty.h>
 #include <std_msgs/Float32MultiArray.h>
 #include <nav_msgs/Path.h>
-#include <tf/transform_datatypes.h>
-#include <tf/transform_listener.h>
 //#include <ptam_com/ptam_info.h>
 #include <std_msgs/Bool.h>
 #include <pcl_ros/point_cloud.h>
@@ -56,7 +54,6 @@ private:
 					init_sub,
 					sendCommand_sub,
 					ptamStart_sub,
-					waypoint_sub,
 					goal_sub;
 
 	// Publishers
@@ -90,7 +87,7 @@ private:
 	static pthread_mutex_t gazeboModelState_mutex;
 	static pthread_mutex_t globalPlanner_mutex;
 
-	geometry_msgs::PoseStamped pose, goalPose, expected_pose;
+	geometry_msgs::PoseStamped pose, goalPose;
 	geometry_msgs::Twist vel;
 	pcl::PointCloud<pcl::PointXYZRGB> pointCloud;
 	//ptam_com::ptam_info ptamInfo;
@@ -99,7 +96,7 @@ private:
 	gazebo_msgs::ModelState initState;
 	geometry_msgs::Pose robotWorldPose;
 	visualization_msgs::Marker vslam_path, gazebo_path;
-	geometry_msgs::Pose  waypointPose;
+	//geometry_msgs::Pose  waypointPose;
 
 	tf::TransformBroadcaster tfBroadcaster;
 
@@ -120,7 +117,6 @@ private:
 	bool left, right, up, down;
 	float vel_scale;
 	int num;
-	tf::TransformListener* listener;
 
 	PTAMLearner learner; //Q learning agent
 
@@ -138,7 +134,7 @@ private:
 	void initCb(const std_msgs::Empty empty);
 	void sendCommandCb(const std_msgs::Empty empty);
 	void ptamStartedCb(const std_msgs::EmptyPtr emptyPtr);
-	void waypointCb(const geometry_msgs::PoseStampedPtr waypointPosePtr);
+	//void waypointCb(const geometry_msgs::PoseStampedPtr waypointPosePtr);
 	void goalCb(const geometry_msgs::PoseStampedPtr goalPosePtr);
 
 public:

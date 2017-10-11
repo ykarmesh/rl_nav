@@ -68,7 +68,6 @@ JoystickNode::JoystickNode()
 	Q_THRESH = 0;
 	up = down = left = right = true;
 	vel_scale = 1.0;
-	listener = new(tf::TransformListener);
 
 	actionClient = new MoveBaseClient(string("move_base"), true);
 	//wait for the action server to come up
@@ -87,8 +86,7 @@ JoystickNode::JoystickNode()
 	ptamInfo_sub = nh.subscribe("/vslam/info", 100, &JoystickNode::ptamInfoCb, this);
 	ptamStart_sub = nh.subscribe("/vslam/started", 100, &JoystickNode::ptamStartedCb, this);
 	plannerStatus_sub = nh.subscribe("/planner/status", 100, &JoystickNode::plannerStatusCb, this);
-	local_plan_sub = nh.subscribe("/move_base/TebLocalPlannerROS/local_plan", 100, &JoystickNode::globalNextPoseCb, this);
-	//globalPoints_sub = nh.subscribe("/planner/global/path", 100, &JoystickNode::globalNextPoseCb, this);
+	globalPoints_sub = nh.subscribe("/planner/global/path", 100, &JoystickNode::globalNextPoseCb, this);
 	gazeboModelStates_sub = nh.subscribe("/gazebo/model_states", 100, &JoystickNode::gazeboModelStatesCb, this);
 	waypoint_sub = nh.subscribe("/move_base_simple/waypoint",100,&JoystickNode::waypointCb,this);
 	goal_sub = nh.subscribe("/move_base_simple/goal",100,&JoystickNode::goalCb,this);
@@ -134,7 +132,6 @@ JoystickNode::JoystickNode()
 	p_nh.getParam("map", MAP);
 	p_nh.getParam("vel_scale", vel_scale);
 	p_nh.getParam("init_angle", INIT_ANGLE);
-	p_nh.getParam("local_planner", LOCAL_PLANNER);
 
 
 	initState.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, initYaw);
@@ -164,7 +161,6 @@ JoystickNode::~JoystickNode()
 	p_nh.deleteParam("init_Y");
 	p_nh.deleteParam("map");
 	p_nh.deleteParam("vel_scale");
-	p_nh.deleteParam("init_angle");
 
 	ofstream ratioFile("ratioFile.txt");
 	ratioFile << ((rlRatio==90)?10:rlRatio) << " " << num_episodes << endl;
@@ -294,42 +290,13 @@ void JoystickNode::poseCb(const geometry_msgs::PoseStampedPtr posePtr)
 /**
  *	Receive next expected robot pose w.r.t. current pose along global path
  */
-void JoystickNode::globalNextPoseCb(const nav_msgs::PathPtr pathPtr)
+void JoystickNode::globalNextPoseCb(const geometry_msgs::PoseStampedPtr nextPosePtr)
 {
 	pthread_mutex_lock(&globalPlanner_mutex);
-	geometry_msgs::Pose pose, prev_pose;
-	geometry_msgs::PoseStamped temp;
-	float distance = 0;
-	int iter = 0;
-	prev_pose.position.x = pathPtr->poses[0].pose.position.x;
-	prev_pose.position.y = pathPtr->poses[0].pose.position.y;
-	for(int i=0; i < pathPtr->poses.size(); i++)
-	{
-		pose = pathPtr->poses[i].pose;
-		distance+= sqrt(pow((pose.position.x-prev_pose.position.x),2)+pow((pose.position.y-prev_pose.position.y),2));
-		iter = i;
-		if(distance>1)
-		{
-			break;
-		}
-		prev_pose = pose;
-	}
-  temp.pose = pose;
-	temp.header = pathPtr->poses[iter].header;
-	try
-	{
-		listener->waitForTransform("/base_link", "/odom", ros::Time::now(), ros::Duration(0.1));
-		listener->transformPose("/base_link", temp, expected_pose);
-	}
-	catch (tf::TransformException &ex)
-	{
-		ROS_ERROR("%s",ex.what());
-		pthread_mutex_unlock(&globalPlanner_mutex);
-		return;
-	}
+
 	float Q; //Q value of the last state-action pair
 	vector<int> stateAction;
-	tie(ignore, stateAction, Q) = learner.getAction(expected_pose); //convert the subsequent part of the trajectory into a RL state-action pair
+	tie(ignore, stateAction, Q) = learner.getAction(*nextPosePtr); //convert the subsequent part of the trajectory into a RL state-action pair
 
 	//ptam_com::ptam_info info;
 	std_msgs::Bool info;
@@ -339,8 +306,8 @@ void JoystickNode::globalNextPoseCb(const nav_msgs::PathPtr pathPtr)
 	pthread_mutex_unlock(&ptamInfo_mutex);
 
 	//publish the next expected pose and pointcloud
-	next_pose_pub.publish(expected_pose);
-	next_pc_pub.publish(Helper::getPointCloud2AtPosition(expected_pose));
+	next_pose_pub.publish(nextPosePtr);
+	next_pc_pub.publish(Helper::getPointCloud2AtPosition(*nextPosePtr));
 
 	//if SLAM broke
 	//if(!info.trackingQuality)
@@ -500,7 +467,6 @@ void JoystickNode::gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelSt
 		initCb(std_msgs::Empty());
 	initState.model_name = modelStatesPtr->name.back();
 
-//ERROR, this is not the world2D frame
 	//publish the ground truth pose
 	geometry_msgs::PoseStamped ps;
 	ps.header.stamp = ros::Time::now();
@@ -550,6 +516,7 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 {
 	if(initialized)//will work only if SLAM is initialized
 	{
+		std_msgs::Float32MultiArray planner_input, trajectories;
 		geometry_msgs::PoseArray safe_poses, unsafe_poses;
 		float Q;
 		vector<int> RLInput; //last RL Input
@@ -584,18 +551,7 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 			float nextAngle = atan(poses[5]);
 */			//float nextAngle = atan2 (waypointPose.position.y + pose.pose.position.x, waypointPose.position.x + pose.pose.position.z);
 			//float nextAngle = atan2 (waypointPose.position.y + robotWorldPose.position.x, waypointPose.position.x + robotWorldPose.position.z);
-			geometry_msgs::PoseStamped expected_pose_w2D;
-			try
-			{
-				listener->waitForTransform("/world2D", "/base_link", ros::Time::now(), ros::Duration(0.1));
-				listener->transformPose("/world2D", expected_pose, expected_pose_w2D);
-			}
-			catch (tf::TransformException &ex)
-			{
-				ROS_ERROR("%s",ex.what());
-				return;
-			}
-			float nextAngle = Helper::Quat2RPY(expected_pose_w2D.pose.orientation)[2];
+			float nextAngle = Helper::Quat2RPY(waypointPose.orientation)[2];
 
 			tie(lastPose, RLInput, prevQ) = learner.getThresholdedClosestAngleStateAction(Q_THRESH, nextAngle, lastPose);
 			//tie(lastPose, RLInput, prevQ) = learner.getSLClosestAngleStateAction(nextAngle);
@@ -618,7 +574,7 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 		{
 			breakCount++;
 			//ptam_com::ptam_info info;
-			std_msgs::Bool info;
+			std_msgs::Bool	info;
 
 			pthread_mutex_lock(&ptamInfo_mutex);
 			info = ptamInfo;

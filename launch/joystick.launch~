@@ -1,0 +1,74 @@
+<launch>
+    	<!-- joy node -->
+  	<node respawn="true" pkg="joy" type="joy_node" name="joy" output="screen">    
+  		<param name="dev" type="string" value="/dev/input/js0" />
+    		<param name="deadzone" value="0.12" />
+  	</node>
+
+
+	<node name="PlannerNode" pkg="rl_nav" type="PlannerNode.py" output="screen" required="true">
+		<param name="map" type="int" value="4" />
+		<remap from="/vslam/pose_world" to="/ORB_SLAM2/Pose" />
+		<remap from="/vslam/info" to="/ORB_SLAM2/Status" />
+	</node>
+
+	<node name="rl_nav" pkg="rl_nav" type="rl_nav" output="screen" required="true" >
+		<remap from="/vslam/pose_world" to="/ORB_SLAM2/Pose" />
+		<remap from="/vslam/frame_points" to="/ORB_SLAM2/FramePoints" />
+		<remap from="/vslam/key_pressed" to="/ORB_SLAM2/Reset" />
+		<remap from="/vslam/info" to="/ORB_SLAM2/Status" />
+		<!-- orb slam -->
+		<param name="init_angle" type="double" value="0" />	
+		
+		<!-- ptam -->
+		<!-- <param name="init_angle" type="double" value="3.14" />	 -->
+		
+		<param name="qThresh" type="double" value="-7" />	
+		<param name="vel_scale" type="double" value="1" />	
+		<param name="MAX_POINT_OVERLAP" type="int" value="150"/>
+		<!-- map 1 -->
+	        <param name="mode" type="string" value="MAP" />	
+		<param name="init_x" type="double" value="2.6" />
+		<param name="init_y" type="double" value="2.6" />
+		<param name="init_Y" type="double" value="1.0472" /> 
+		<param name="map" type="int" value="1" /> 
+
+		
+		<!-- map 2 -->
+		<!-- <param name="mode" type="string" value="MAP" />
+		<param name="init_x" type="double" value="1.22755896" />
+		<param name="init_y" type="double" value="1.76695301" />
+		<param name="init_Y" type="double" value="1.282365" />
+		<param name="map" type="int" value="2" /> -->
+
+		<!-- map 3 -->
+		<!--<param name="mode" type="string" value="MAP" />
+		<param name="init_x" type="double" value="2" />
+		<param name="init_y" type="double" value="2" />
+		<param name="init_Y" type="double" value="0" />
+		<param name="map" type="int" value="3" />-->
+
+		<!-- corridor map -->
+		<!-- <param name="mode" type="string" value="MAP" />
+		<param name="init_x" type="double" value="-3" />
+		<param name="init_y" type="double" value="-1.81" />
+		<param name="init_Y" type="double" value="1.282365" />
+		<param name="map" type="int" value="4" /> -->
+
+		<!-- training map -->
+		<!-- <param name="init_x" type="double" value="-1" />
+		<param name="init_y" type="double" value="1" />
+		<param name="init_Y" type="double" value="0.4" />
+		<param name="map" type="int" value="-1" /> -->
+
+		 <!-- rooms map -->
+		<!--<param name="mode" type="string" value="MAP" />	
+		<param name="init_x" type="double" value="2.6" />
+		<param name="init_y" type="double" value="2.6" />
+		<param name="init_Y" type="double" value="1.0472" /> 
+		<param name="map" type="int" value="5" />-->
+		<!-- <remap from="/cmd_vel_mux/input/teleop" to="/cmd_vel" /> -->
+
+	</node>
+	
+</launch>

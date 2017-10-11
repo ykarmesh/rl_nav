@@ -51,7 +51,7 @@
 
   	<!-- map1, rooms -->
   	<node pkg="tf" type="static_transform_publisher" name="rgb_base" args="0.0 0.0 0.3 -0.683012925973 0.18301186561 -0.18301186561 0.683012925973 world2D world 1000"/>
-	<node pkg="tf" type="static_transform_publisher" name="Gazebo_base" args="-2.0 -2.0 0 0 0 0 1 world2D gazebo 1000"/>
+	<node pkg="tf" type="static_transform_publisher" name="Gazebo_base" args="2.0 2.0 0.3 0 0 0 1 world2D gazebo 1000"/>
 
   	<!-- map2 -->
   	<!-- <node pkg="tf" type="static_transform_publisher" name="rgb_base" args="0.0 0.0 0.0 -0.699766257748 0.101622755904 -0.101622755904 0.699766257748 world2D world 1000"/> -->

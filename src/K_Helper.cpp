@@ -19,12 +19,11 @@ pcl::PointCloud<pcl::PointXYZ> Helper::currentPointCloud;
 ros::ServiceClient Helper::posePointCloudClient;
 int Helper::MAP;
 bool Helper::up, Helper::down, Helper::left, Helper::right;
+ros::Publisher Helper::next_poses_pub;
 nav_msgs::OccupancyGrid Helper::grid;
-tf::TransformListener* Helper::listener = NULL;
-
 Helper::Helper()
 {
-	listener = new(tf::TransformListener);
+	next_poses_pub = nh.advertise<geometry_msgs::PoseArray>("/my_next_poses",1);
 	posePointCloudClient = nh.serviceClient<ORB_SLAM2::PosePointCloud>("/ORB_SLAM2/posepointcloud");
 	pose_sub = nh.subscribe("/vslam/pose_world",100, &Helper::poseCb, this);
 	info_sub = nh.subscribe("/vslam/info",100, &Helper::ptamInfoCb, this);
@@ -76,7 +75,7 @@ void Helper::OccupancyGridCb(const nav_msgs::OccupancyGrid::ConstPtr &OGPtr)
 //-----------------------------------------------------------------------
 
 //Get ROS pointcloud2 at position relative to camera frame given as bernstein input
-sensor_msgs::PointCloud2 Helper::getPointCloud2AtPosition(geometry_msgs::PoseStamped input)
+sensor_msgs::PointCloud2 Helper::getPointCloud2AtPosition(vector<float> input)
 {
 	ORB_SLAM2::PosePointCloud posePointCloud;
 
@@ -90,7 +89,7 @@ sensor_msgs::PointCloud2 Helper::getPointCloud2AtPosition(geometry_msgs::PoseSta
 }
 
 //Get PCL pointcloud at position relative to camera frame given as bernstein input
-pcl::PointCloud<pcl::PointXYZ> Helper::getPCLPointCloudAtPosition(geometry_msgs::PoseStamped input)
+pcl::PointCloud<pcl::PointXYZ> Helper::getPCLPointCloudAtPosition(vector<float> input)
 {
 	pcl::PointCloud<pcl::PointXYZ> pointCloud;
 	pcl::fromROSMsg(Helper::getPointCloud2AtPosition(input), pointCloud);
@@ -98,7 +97,7 @@ pcl::PointCloud<pcl::PointXYZ> Helper::getPCLPointCloudAtPosition(geometry_msgs:
 }
 
 //Quaternion to RPY
-vector<double> Helper::Quat2RPY(geometry_msgs::Quaternion quat)
+vector<double> Helper::getPoseOrientation(geometry_msgs::Quaternion quat)
 {
 	double roll, pitch, yaw;
 	tf::Quaternion q;
@@ -107,8 +106,9 @@ vector<double> Helper::Quat2RPY(geometry_msgs::Quaternion quat)
 	return {roll, pitch, yaw};
 }
 
+//CHANGE or REMOVE
 //Convert bernstein input in camera frame to pose in world frame
-geometry_msgs::PoseStamped Helper::getPoseFromInput(geometry_msgs::PoseStamped input, geometry_msgs::PoseStamped pose)
+geometry_msgs::PoseStamped Helper::getPoseFromInput(vector<float> input, geometry_msgs::PoseStamped pose)
 {
 	geometry_msgs::PoseStamped p_out;
 	geometry_msgs::Pose currentPose, p, newPose;
@@ -117,10 +117,10 @@ geometry_msgs::PoseStamped Helper::getPoseFromInput(geometry_msgs::PoseStamped i
 
 	currentPose = pose.pose;
 
-	p.position.z = input.pose.position.x;
-	p.position.x = -input.pose.position.y;
+	p.position.z = input[3];
+	p.position.x = -input[4]*input[12];
 	p.position.y = 0.0;
-	p.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, Quat2RPY(input.pose.orientation)[2],0.0);
+	p.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, -input[12]*atan(input[5]),0.0);
 	tf::quaternionMsgToTF(currentPose.orientation, currentQuat);
 	tf::Transform currentTF(tf::Matrix3x3(currentQuat), tf::Vector3(currentPose.position.x,currentPose.position.y,currentPose.position.z));
 
@@ -145,83 +145,61 @@ vector<pcl::PointXYZ> Helper::pointCloudIntersection(pcl::PointCloud<pcl::PointX
 	return commonPoints;
 }
 
+//May require changes
 //for collision avoidance, can be replaced with any collision avoidance algorithm
 bool Helper::inLimits(geometry_msgs::PointStamped point)
 {
 	geometry_msgs::PointStamped point_odom;
 	try
 	{
-		listener->waitForTransform("/odom", "/gazebo", ros::Time::now(), ros::Duration(0.1));
-		listener->transformPoint("/odom", point, point_odom);
+		listener.transformPoint("/odom", point, point_odom);
 	}
 	catch (tf::TransformException &ex)
 	{
 		ROS_ERROR("%s",ex.what());
-		return false;
+		return;
 	}
-	std::cout<<"Point_world2d x "<<point.point.x<<" y "<<point.point.y<<std::endl;
-	std::cout<<"Point_ODOM x "<<point_odom.point.x<<" y "<<point_odom.point.y<<std::endl;
-
 	float res = grid.info.resolution;
-	int cellx = ceil((point_odom.point.x-grid.info.origin.position.x)/res);
-	int celly = ceil((point_odom.point.y-grid.info.origin.position.y)/res);
-	std::cout<<" Cellx "<<cellx<<" celly "<<celly<<std::endl;
-	std::cout<<" Origin.x "<<grid.info.origin.position.x<<" Origin.y "<<grid.info.origin.position.y<<" Origin.yaw "<<Quat2RPY(grid.info.origin.orientation)[2]<<std::endl;
-  float data = grid.data[cellx+(celly)*grid.info.width];
-	std::cout<<" data "<<data<<std::endl;
-
-	if((data < 20)&&(data!=-1))
+	int cellx = (int)point_odom.point.x/res;
+	int celly = (int)point_odom.point.y/res;
+  float data = grid.data[cellx+(celly-1)*grid.info.width];
+	if((data < 50)&&(data!=-1))
 	{
-		cout<<"waypoint is in free space"<<std::endl;
+		cout<<"waypoint is in free space";
 		return true;
 	}
-	cout<<"waypoint is failing"<<std::endl;
+	cout<<"waypoint is failing";
 	return false;
-	/*
-	float x = point.point.x;
-	float y = point.point.y;
-	if(MAP==1)
-	return x>0.4 and y > 0.4 and x < 7.6 and y < 7.6 and (x<3.6 or x>4.4 or (x>=3.6 and x<=4.4 and y>6.4)); // map 1
-if(MAP==2)
-	return x>0.4 and y > 0.4 and x < 7.6 and y < 7.6 and (x<2.6 or y>5.4); // map 1
-if(MAP==3)
-	return x>0.4 and y > 0.4 and x < 7.6 and y < 7.6 and ((x<2.9 or x>5.1) and (y<3.1 or y>4.9)); // map 3
-if(MAP==4)
-	return x>-3.6 and y > -3.6 and x < 4.1 and y < 4.1 and (x<-1.9 or x>-1.1 or (x>=-1.9 and x<=-1.1 and y>1.9)) and (x<1.1 or x>1.9 or (x>=1.1 and x<=1.9 and y<-1.9)) and not(x<-3 and y>3); // map 4
-if(MAP==5)
-	return x>1.2 and y > 0.4 and x < 10.5 and y < 7.6 and (x<3.6 or x>5.4 or (x>=3.6 and x<=5.4 and y>6.4)) and !(x > 7 and x<9 and y>3 and y<5); // rooms
-if(MAP==-1)
-	return x>=-6 and x<=0 and y>=-1 and y<=3; //training map
-return true;*/
-
 }
 
+//CHANGE
 //generate the recovery actions as bernstein inputs
-vector<geometry_msgs::PoseStamped > Helper::getPoses()
+vector<vector<float> > Helper::getTrajectories()
 {
-	float angle = PI/90.0, num_angles = 14;
+	float angle = PI/90.0, num_angles = 14;//, x, y;
 	geometry_msgs::PointStamped point;
-	vector<geometry_msgs::PoseStamped > inputs;
-	vector<double> orientation = Quat2RPY(robotWorldPose.orientation);
+	vector<vector<float> > inputs;
+	vector<double> orientation = getPoseOrientation(robotWorldPose.orientation);
+	geometry_msgs::PoseArray poseArray;
+	poseArray.header = Helper::pose.header;
+	poseArray.header.frame_id = "world";
 	for(float i=-num_angles*angle ; i<=num_angles*angle ; i+=angle)
 	{
-		geometry_msgs::PoseStamped inp;
-		inp.header.frame_id="base_link";
-		point.header.stamp = ros::Time::now();
-		point.header.frame_id = "gazebo";
+		vector<float> inp = {0.0,0.0,0.0,
+								 cos(i), sin(i), tan(i),
+								 0.0,0.0,0.0,0.0,0.0,0.0,
+								 1.0,0.0,1.5};
 		if(up)
 		{
 			if(i<0 and !right)
 				continue;
 			if(i>0 and !left)
 				continue;
-			point.point.x = robotWorldPose.position.x + cos(orientation[2] + i);
-			point.point.y = robotWorldPose.position.y + sin(orientation[2] + i);
-			if(inLimits(point))
-			{	inp.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, i);
-				inp.pose.position.x = cos(i);
-				inp.pose.position.y = sin(i);
-				inp.header.stamp = ros::Time::now();
+			x = robotWorldPose.position.x + cos(orientation[2] + i);
+			y = robotWorldPose.position.y + sin(orientation[2] + i);
+			if(inLimits(x,y))// and collisionFree(robotWorldPose.position.x, x, robotWorldPose.position.y, y, i, 1, orientation[2]))
+			{
+				poseArray.poses.push_back(getPoseFromInput(inp, Helper::pose).pose);
 				inputs.push_back(inp);
 			}
 		}
@@ -232,17 +210,20 @@ vector<geometry_msgs::PoseStamped > Helper::getPoses()
 				continue;
 			if(i<0 and !right)
 				continue;
-			point.point.x = robotWorldPose.position.x - cos(orientation[2] - i);
-			point.point.y = robotWorldPose.position.y - sin(orientation[2] - i);
-			if(inLimits(point))
-			{	inp.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, -i);
-				inp.pose.position.x = -cos(-i);
-				inp.pose.position.y = -sin(-i);
-				inp.header.stamp = ros::Time::now();
+			inp[3] *= -1.0;
+			inp[4] *= -1.0;
+			//inp[5] *= -1.0;
+			inp[12] *= -1.0;
+			x = robotWorldPose.position.x - cos(orientation[2] - i);
+			y = robotWorldPose.position.y - sin(orientation[2] - i);
+			if(inLimits(x,y))// and collisionFree(robotWorldPose.position.x, x, robotWorldPose.position.y, y, -i, -1, orientation[2]))
+			{
+				poseArray.poses.push_back(getPoseFromInput(inp, Helper::pose).pose);
 				inputs.push_back(inp);
 			}
 		}
 	}
+	next_poses_pub.publish(poseArray);
 	return inputs;
 }
 
@@ -288,13 +269,4 @@ vector<vector<vector<int> > > Helper::readFeatureExpectation(string fileName)
 	}
 
 	return episodeList;
-}
-
-int Helper::sign(float x)
-{
-	int val = signbit(x);
-	if(val==0)
-		return 1;
-	else
-		return -1;
 }

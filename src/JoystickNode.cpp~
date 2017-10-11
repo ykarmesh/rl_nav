@@ -68,7 +68,6 @@ JoystickNode::JoystickNode()
 	Q_THRESH = 0;
 	up = down = left = right = true;
 	vel_scale = 1.0;
-	listener = new(tf::TransformListener);
 
 	actionClient = new MoveBaseClient(string("move_base"), true);
 	//wait for the action server to come up
@@ -298,35 +297,22 @@ void JoystickNode::globalNextPoseCb(const nav_msgs::PathPtr pathPtr)
 {
 	pthread_mutex_lock(&globalPlanner_mutex);
 	geometry_msgs::Pose pose, prev_pose;
-	geometry_msgs::PoseStamped temp;
 	float distance = 0;
 	int iter = 0;
-	prev_pose.position.x = pathPtr->poses[0].pose.position.x;
-	prev_pose.position.y = pathPtr->poses[0].pose.position.y;
+	prev_pose.position.x = prev_pose.position.y = prev_pose.position.z = 0;
 	for(int i=0; i < pathPtr->poses.size(); i++)
 	{
 		pose = pathPtr->poses[i].pose;
-		distance+= sqrt(pow((pose.position.x-prev_pose.position.x),2)+pow((pose.position.y-prev_pose.position.y),2));
-		iter = i;
+		distance+= sqrt(pow((pose.position.x-prev_pose.position.x),2)+pow((pose.position.x-prev_pose.position.x),2)+pow((pose.position.x-prev_pose.position.x),2));
 		if(distance>1)
 		{
+			iter = i;
 			break;
 		}
 		prev_pose = pose;
 	}
-  temp.pose = pose;
-	temp.header = pathPtr->poses[iter].header;
-	try
-	{
-		listener->waitForTransform("/base_link", "/odom", ros::Time::now(), ros::Duration(0.1));
-		listener->transformPose("/base_link", temp, expected_pose);
-	}
-	catch (tf::TransformException &ex)
-	{
-		ROS_ERROR("%s",ex.what());
-		pthread_mutex_unlock(&globalPlanner_mutex);
-		return;
-	}
+  expected_pose.pose = pose;
+	expected_pose.header = path->poses[iter].header;
 	float Q; //Q value of the last state-action pair
 	vector<int> stateAction;
 	tie(ignore, stateAction, Q) = learner.getAction(expected_pose); //convert the subsequent part of the trajectory into a RL state-action pair
@@ -500,7 +486,6 @@ void JoystickNode::gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelSt
 		initCb(std_msgs::Empty());
 	initState.model_name = modelStatesPtr->name.back();
 
-//ERROR, this is not the world2D frame
 	//publish the ground truth pose
 	geometry_msgs::PoseStamped ps;
 	ps.header.stamp = ros::Time::now();
@@ -584,18 +569,7 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 			float nextAngle = atan(poses[5]);
 */			//float nextAngle = atan2 (waypointPose.position.y + pose.pose.position.x, waypointPose.position.x + pose.pose.position.z);
 			//float nextAngle = atan2 (waypointPose.position.y + robotWorldPose.position.x, waypointPose.position.x + robotWorldPose.position.z);
-			geometry_msgs::PoseStamped expected_pose_w2D;
-			try
-			{
-				listener->waitForTransform("/world2D", "/base_link", ros::Time::now(), ros::Duration(0.1));
-				listener->transformPose("/world2D", expected_pose, expected_pose_w2D);
-			}
-			catch (tf::TransformException &ex)
-			{
-				ROS_ERROR("%s",ex.what());
-				return;
-			}
-			float nextAngle = Helper::Quat2RPY(expected_pose_w2D.pose.orientation)[2];
+			float nextAngle = Helper::Quat2RPY(expected_pose.orientation)[2];
 
 			tie(lastPose, RLInput, prevQ) = learner.getThresholdedClosestAngleStateAction(Q_THRESH, nextAngle, lastPose);
 			//tie(lastPose, RLInput, prevQ) = learner.getSLClosestAngleStateAction(nextAngle);
