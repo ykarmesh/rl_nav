@@ -298,11 +298,13 @@ void JoystickNode::globalNextPoseCb(const nav_msgs::PathPtr pathPtr)
 {
 	pthread_mutex_lock(&globalPlanner_mutex);
 	geometry_msgs::Pose pose, prev_pose;
-	geometry_msgs::PoseStamped temp;
+	tf::Pose To1, To2, T12;
+
 	float distance = 0;
 	int iter = 0;
 	prev_pose.position.x = pathPtr->poses[0].pose.position.x;
 	prev_pose.position.y = pathPtr->poses[0].pose.position.y;
+	tf::poseMsgToTF(pathPtr->poses[0].pose, To1);
 	for(int i=0; i < pathPtr->poses.size(); i++)
 	{
 		pose = pathPtr->poses[i].pose;
@@ -314,9 +316,14 @@ void JoystickNode::globalNextPoseCb(const nav_msgs::PathPtr pathPtr)
 		}
 		prev_pose = pose;
 	}
-  temp.pose = pose;
-	temp.header = pathPtr->poses[iter].header;
-	try
+	expected_pose.header.stamp = ros::Time::now();
+	expected_pose.header.frame_id = "/base_link";
+	tf::poseMsgToTF(pose, To2);
+	T12 = To1.inverse()*To2;
+	tf::poseTFToMsg(T12, expected_pose.pose);
+
+	//std::cout<<" temp_pose.x "<<temp_pose.position.x<<" temp_pose.y "<<temp_pose.position.y<<" temp_pose.yaw "<<Helper::Quat2RPY(temp_pose.orientation)[2]<<std::endl;
+	/*try
 	{
 		listener->waitForTransform("/base_link", "/odom", ros::Time::now(), ros::Duration(0.1));
 		listener->transformPose("/base_link", temp, expected_pose);
@@ -326,7 +333,8 @@ void JoystickNode::globalNextPoseCb(const nav_msgs::PathPtr pathPtr)
 		ROS_ERROR("%s",ex.what());
 		pthread_mutex_unlock(&globalPlanner_mutex);
 		return;
-	}
+	}*/
+	//std::cout<<" expected_pose.x "<<expected_pose.pose.position.x<<" expected_pose.y "<<expected_pose.pose.position.y<<" expected_pose.yaw "<<Helper::Quat2RPY(expected_pose.pose.orientation)[2]<<std::endl;
 	float Q; //Q value of the last state-action pair
 	vector<int> stateAction;
 	tie(ignore, stateAction, Q) = learner.getAction(expected_pose); //convert the subsequent part of the trajectory into a RL state-action pair
@@ -584,6 +592,12 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 			float nextAngle = atan(poses[5]);
 */			//float nextAngle = atan2 (waypointPose.position.y + pose.pose.position.x, waypointPose.position.x + pose.pose.position.z);
 			//float nextAngle = atan2 (waypointPose.position.y + robotWorldPose.position.x, waypointPose.position.x + robotWorldPose.position.z);
+			/*geometry_msgs::Pose prev_pose;
+			tf::Pose To1, To2, T12;
+			tf::poseMsgToTF(expected_pose.pose, Tbe);
+			tf::poseMsgToTF(pose.pose, Twc);
+			T12 = To1.inverse()*To2;
+			tf::poseTFToMsg(T12, expected_pose.pose);*/
 			geometry_msgs::PoseStamped expected_pose_w2D;
 			try
 			{

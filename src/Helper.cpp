@@ -159,23 +159,24 @@ bool Helper::inLimits(geometry_msgs::PointStamped point)
 		ROS_ERROR("%s",ex.what());
 		return false;
 	}
-	std::cout<<"Point_world2d x "<<point.point.x<<" y "<<point.point.y<<std::endl;
-	std::cout<<"Point_ODOM x "<<point_odom.point.x<<" y "<<point_odom.point.y<<std::endl;
+	//std::cout<<"Point_world2d x "<<point.point.x<<" y "<<point.point.y<<std::endl;
+	//std::cout<<"Point_ODOM x "<<point_odom.point.x<<" y "<<point_odom.point.y<<std::endl;
 
 	float res = grid.info.resolution;
 	int cellx = ceil((point_odom.point.x-grid.info.origin.position.x)/res);
 	int celly = ceil((point_odom.point.y-grid.info.origin.position.y)/res);
-	std::cout<<" Cellx "<<cellx<<" celly "<<celly<<std::endl;
-	std::cout<<" Origin.x "<<grid.info.origin.position.x<<" Origin.y "<<grid.info.origin.position.y<<" Origin.yaw "<<Quat2RPY(grid.info.origin.orientation)[2]<<std::endl;
+	//std::cout<<" Cellx "<<cellx<<" celly "<<celly<<std::endl;
+	//std::cout<<" Origin.x "<<grid.info.origin.position.x<<" Origin.y "<<grid.info.origin.position.y<<" Origin.yaw "<<Quat2RPY(grid.info.origin.orientation)[2]<<std::endl;
   float data = grid.data[cellx+(celly)*grid.info.width];
-	std::cout<<" data "<<data<<std::endl;
+	//std::cout<<" data "<<data<<std::endl;
 
-	if((data < 20)&&(data!=-1))
+	//if((data < 20)&&(data!=-1))
+	if(data < 20)
 	{
-		cout<<"waypoint is in free space"<<std::endl;
+		//cout<<"waypoint is in free space"<<std::endl;
 		return true;
 	}
-	cout<<"waypoint is failing"<<std::endl;
+	//cout<<"waypoint is failing"<<std::endl;
 	return false;
 	/*
 	float x = point.point.x;
