@@ -56,8 +56,7 @@ private:
 					init_sub,
 					sendCommand_sub,
 					ptamStart_sub,
-					waypoint_sub,
-					goal_sub;
+					goal_sub; //waypoint_sub,
 
 	// Publishers
 	ros::Publisher  vel_pub,
@@ -99,7 +98,7 @@ private:
 	gazebo_msgs::ModelState initState;
 	geometry_msgs::Pose robotWorldPose;
 	visualization_msgs::Marker vslam_path, gazebo_path;
-	geometry_msgs::Pose  waypointPose;
+	//geometry_msgs::Pose  waypointPose;
 
 	tf::TransformBroadcaster tfBroadcaster;
 
@@ -138,7 +137,7 @@ private:
 	void initCb(const std_msgs::Empty empty);
 	void sendCommandCb(const std_msgs::Empty empty);
 	void ptamStartedCb(const std_msgs::EmptyPtr emptyPtr);
-	void waypointCb(const geometry_msgs::PoseStampedPtr waypointPosePtr);
+	//void waypointCb(const geometry_msgs::PoseStampedPtr waypointPosePtr);
 	void goalCb(const geometry_msgs::PoseStampedPtr goalPosePtr);
 
 public:

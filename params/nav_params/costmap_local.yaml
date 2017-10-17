@@ -1,6 +1,6 @@
 global_frame: odom
 rolling_window: true
-update_frequency: 4.0
+update_frequency: 5.0
 publish_frequency: 2.0
 
 plugins:

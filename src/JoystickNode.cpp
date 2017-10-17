@@ -90,7 +90,7 @@ JoystickNode::JoystickNode()
 	local_plan_sub = nh.subscribe("/move_base/TebLocalPlannerROS/local_plan", 100, &JoystickNode::globalNextPoseCb, this);
 	//globalPoints_sub = nh.subscribe("/planner/global/path", 100, &JoystickNode::globalNextPoseCb, this);
 	gazeboModelStates_sub = nh.subscribe("/gazebo/model_states", 100, &JoystickNode::gazeboModelStatesCb, this);
-	waypoint_sub = nh.subscribe("/move_base_simple/waypoint",100,&JoystickNode::waypointCb,this);
+	//waypoint_sub = nh.subscribe("/move_base_simple/waypoint",100,&JoystickNode::waypointCb,this);
 	goal_sub = nh.subscribe("/move_base_simple/goal",100,&JoystickNode::goalCb,this);
 
 	vslam_path.id=0;
@@ -512,7 +512,7 @@ void JoystickNode::gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelSt
 	//publish the ground truth pose
 	geometry_msgs::PoseStamped ps;
 	ps.header.stamp = ros::Time::now();
-	ps.header.frame_id = "world2D";
+	ps.header.frame_id = "gazebo";
 	ps.pose = robotWorldPose;
 	gazebo_pose_pub.publish(ps);
 
@@ -545,12 +545,12 @@ void JoystickNode::goalCb(const geometry_msgs::PoseStampedPtr goalPosePtr)
 
 /**
  *	Receiving the waypoint
- */
+
 void JoystickNode::waypointCb(const geometry_msgs::PoseStampedPtr waypointPosePtr)
 {
 	waypointPose = waypointPosePtr->pose;
 }
-
+*/
 /**
  *	Sending commands to the robot
  */
@@ -601,7 +601,7 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 			geometry_msgs::PoseStamped expected_pose_w2D;
 			try
 			{
-				listener->waitForTransform("/world2D", "/base_link", ros::Time::now(), ros::Duration(0.1));
+				listener->waitForTransform("/world2D", "/base_link", ros::Time(0), ros::Duration(0.1));
 				listener->transformPose("/world2D", expected_pose, expected_pose_w2D);
 			}
 			catch (tf::TransformException &ex)

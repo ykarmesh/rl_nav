@@ -21,6 +21,7 @@ int Helper::MAP;
 bool Helper::up, Helper::down, Helper::left, Helper::right;
 nav_msgs::OccupancyGrid Helper::grid;
 tf::TransformListener* Helper::listener = NULL;
+double Helper::robot_radius;
 
 Helper::Helper()
 {
@@ -31,6 +32,7 @@ Helper::Helper()
 	pointCloud_sub = nh.subscribe("/vslam/frame_points", 100, &Helper::pointCloudCb, this);
 	gazeboModelStates_sub = nh.subscribe("/gazebo/model_states", 100, &Helper::gazeboModelStatesCb, this);
 	OccupancyGrid_sub = nh.subscribe("/move_base/global_costmap/costmap", 1, &Helper::OccupancyGridCb, this);
+	nh.param("robot_radius", robot_radius, 0.2);
 	MAP=-1;
 	up = down = left = right = true;
 	ros::NodeHandle p_nh("~");
@@ -148,52 +150,26 @@ vector<pcl::PointXYZ> Helper::pointCloudIntersection(pcl::PointCloud<pcl::PointX
 //for collision avoidance, can be replaced with any collision avoidance algorithm
 bool Helper::inLimits(geometry_msgs::PointStamped point)
 {
-	geometry_msgs::PointStamped point_odom;
-	try
-	{
-		listener->waitForTransform("/odom", "/gazebo", ros::Time::now(), ros::Duration(0.1));
-		listener->transformPoint("/odom", point, point_odom);
-	}
-	catch (tf::TransformException &ex)
-	{
-		ROS_ERROR("%s",ex.what());
-		return false;
-	}
-	//std::cout<<"Point_world2d x "<<point.point.x<<" y "<<point.point.y<<std::endl;
-	//std::cout<<"Point_ODOM x "<<point_odom.point.x<<" y "<<point_odom.point.y<<std::endl;
-
 	float res = grid.info.resolution;
-	int cellx = ceil((point_odom.point.x-grid.info.origin.position.x)/res);
-	int celly = ceil((point_odom.point.y-grid.info.origin.position.y)/res);
+	int cellx = ceil((point.point.x-grid.info.origin.position.x)/res);
+	int celly = ceil((point.point.y-grid.info.origin.position.y)/res);
+	int cellradius = ceil(robot_radius/res);
 	//std::cout<<" Cellx "<<cellx<<" celly "<<celly<<std::endl;
-	//std::cout<<" Origin.x "<<grid.info.origin.position.x<<" Origin.y "<<grid.info.origin.position.y<<" Origin.yaw "<<Quat2RPY(grid.info.origin.orientation)[2]<<std::endl;
-  float data = grid.data[cellx+(celly)*grid.info.width];
-	//std::cout<<" data "<<data<<std::endl;
+	float data = grid.data[(cellx)+(celly)*grid.info.height];
+	/*float data1 = grid.data[(cellx+cellradius)+(celly)*grid.info.height];
+	float data2 = grid.data[(cellx-cellradius)+(celly)*grid.info.height];
+	float data3 = grid.data[(cellx)+(celly-cellradius)*grid.info.height];
+	float data4 = grid.data[(cellx)+(celly+cellradius)*grid.info.height];*/
+	//std::cout<<" data1 "<<data1<<" data2 "<<data2<<" data3 "<<data3<<" data4 "<<data4<<std::endl;
 
 	//if((data < 20)&&(data!=-1))
-	if(data < 20)
-	{
-		//cout<<"waypoint is in free space"<<std::endl;
-		return true;
+	//if((data1 > 20) || (data2 > 20) || (data3 > 20) || (data4 > 20))
+	if(data > 20)
+	{ //std::cout<<"false"<<"\n";
+		return false;
 	}
-	//cout<<"waypoint is failing"<<std::endl;
-	return false;
-	/*
-	float x = point.point.x;
-	float y = point.point.y;
-	if(MAP==1)
-	return x>0.4 and y > 0.4 and x < 7.6 and y < 7.6 and (x<3.6 or x>4.4 or (x>=3.6 and x<=4.4 and y>6.4)); // map 1
-if(MAP==2)
-	return x>0.4 and y > 0.4 and x < 7.6 and y < 7.6 and (x<2.6 or y>5.4); // map 1
-if(MAP==3)
-	return x>0.4 and y > 0.4 and x < 7.6 and y < 7.6 and ((x<2.9 or x>5.1) and (y<3.1 or y>4.9)); // map 3
-if(MAP==4)
-	return x>-3.6 and y > -3.6 and x < 4.1 and y < 4.1 and (x<-1.9 or x>-1.1 or (x>=-1.9 and x<=-1.1 and y>1.9)) and (x<1.1 or x>1.9 or (x>=1.1 and x<=1.9 and y<-1.9)) and not(x<-3 and y>3); // map 4
-if(MAP==5)
-	return x>1.2 and y > 0.4 and x < 10.5 and y < 7.6 and (x<3.6 or x>5.4 or (x>=3.6 and x<=5.4 and y>6.4)) and !(x > 7 and x<9 and y>3 and y<5); // rooms
-if(MAP==-1)
-	return x>=-6 and x<=0 and y>=-1 and y<=3; //training map
-return true;*/
+	//std::cout<<"true"<<"\n";
+	return true;
 
 }
 
@@ -203,21 +179,33 @@ vector<geometry_msgs::PoseStamped > Helper::getPoses()
 	float angle = PI/90.0, num_angles = 14;
 	geometry_msgs::PointStamped point;
 	vector<geometry_msgs::PoseStamped > inputs;
-	vector<double> orientation = Quat2RPY(robotWorldPose.orientation);
+	vector<double> orientation = Quat2RPY(pose.pose.orientation);
+	geometry_msgs::PoseStamped pose_odom;
+	try
+	{
+		listener->waitForTransform("/odom", "/world", ros::Time::now(), ros::Duration(0.2));
+		listener->transformPose("/odom", pose, pose_odom);
+	}
+	catch (tf::TransformException &ex)
+	{
+		ROS_ERROR("%s",ex.what());
+		return inputs;
+	}
 	for(float i=-num_angles*angle ; i<=num_angles*angle ; i+=angle)
 	{
 		geometry_msgs::PoseStamped inp;
 		inp.header.frame_id="base_link";
 		point.header.stamp = ros::Time::now();
-		point.header.frame_id = "gazebo";
+		point.header.frame_id = "odom";
+
 		if(up)
 		{
 			if(i<0 and !right)
 				continue;
 			if(i>0 and !left)
 				continue;
-			point.point.x = robotWorldPose.position.x + cos(orientation[2] + i);
-			point.point.y = robotWorldPose.position.y + sin(orientation[2] + i);
+			point.point.x = pose_odom.pose.position.x + cos(orientation[2] + i);
+			point.point.y = pose_odom.pose.position.y + sin(orientation[2] + i);
 			if(inLimits(point))
 			{	inp.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, i);
 				inp.pose.position.x = cos(i);
@@ -233,8 +221,8 @@ vector<geometry_msgs::PoseStamped > Helper::getPoses()
 				continue;
 			if(i<0 and !right)
 				continue;
-			point.point.x = robotWorldPose.position.x - cos(orientation[2] - i);
-			point.point.y = robotWorldPose.position.y - sin(orientation[2] - i);
+			point.point.x = pose_odom.pose.position.x - cos(orientation[2] - i);
+			point.point.y = pose_odom.pose.position.y - sin(orientation[2] - i);
 			if(inLimits(point))
 			{	inp.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, -i);
 				inp.pose.position.x = -cos(-i);
@@ -242,6 +230,7 @@ vector<geometry_msgs::PoseStamped > Helper::getPoses()
 				inp.header.stamp = ros::Time::now();
 				inputs.push_back(inp);
 			}
+			std::cout<<std::endl;
 		}
 	}
 	return inputs;

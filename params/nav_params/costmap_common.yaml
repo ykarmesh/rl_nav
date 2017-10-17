@@ -1,7 +1,7 @@
 #---standard pioneer footprint----(in meters)---
 
 robot_radius: 0.17
-footprint_padding: 0.1
+footprint_padding: 0.05
 
 robot_base_frame: base_link
 transform_tolerance: 0.3
@@ -20,6 +20,6 @@ obstacles_laser:
     point_cloud_sensor: {data_type: PointCloud2, topic: /rl/Pointcloud, observation_persistence: 0, marking: true, clearing: true}
 
 inflation:
-    inflation_radius: 0.3
+    inflation_radius: 0.15
     cost_scaling_factor: 10
     

@@ -90,6 +90,7 @@ public:
 	static int sign(float x);
 	static nav_msgs::OccupancyGrid grid;
 	static tf::TransformListener* listener;
+	static double robot_radius;
 
 	static constexpr char* MAP_FRAME_ID = "world";
 	static constexpr char* NAV_FRAME_ID = "world2D";
