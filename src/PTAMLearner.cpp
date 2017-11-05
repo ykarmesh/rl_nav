@@ -23,12 +23,12 @@ PTAMLearner::PTAMLearner()
 
 void PTAMLearner::gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelStatesPtr)
 {
-	pthread_mutex_lock(&gazeboModelState_mutex);	
+	pthread_mutex_lock(&gazeboModelState_mutex);
 	robotWorldPose = modelStatesPtr->pose.back();
 	pthread_mutex_unlock(&gazeboModelState_mutex);
 }
 
-void PTAMLearner::pointCloudCb(const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloudPtr)	
+void PTAMLearner::pointCloudCb(const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloudPtr)
 {
 	pthread_mutex_lock(&pointCloud_mutex);
 	currentPointCloud = *pointCloudPtr;
@@ -48,7 +48,7 @@ CommandStateActionQ PTAMLearner::getAction(geometry_msgs::PoseStamped inputPose)
 {
 	vector<int> rl_input;
 	pcl::PointCloud<pcl::PointXYZ> nextPointCloud = Helper::getPCLPointCloudAtPosition(inputPose);
-	
+
 	pthread_mutex_lock(&pointCloud_mutex);
 	vector<pcl::PointXYZ> commonPoints = Helper::pointCloudIntersection(currentPointCloud,nextPointCloud);
 	pthread_mutex_unlock(&pointCloud_mutex);
@@ -81,10 +81,10 @@ CommandStateActionQ PTAMLearner::getBestQStateAction(geometry_msgs::PoseStamped 
 	getActions();
 	cout<<"evaluating actions"<<endl;
 	for(auto input : possibleTrajectories)
-	{	
+	{
 		geometry_msgs::PoseStamped inp = get<0>(input);
-		if(!(Helper::sign(lastPose.pose.position.x) + Helper::sign(inp.pose.position.x)) and 
-			!(Helper::Quat2RPY(lastPose.pose.orientation)[2] + Helper::Quat2RPY(inp.pose.orientation)[2]) and 
+		if(!(Helper::sign(lastPose.pose.position.x) + Helper::sign(inp.pose.position.x)) and
+			!(Helper::Quat2RPY(lastPose.pose.orientation)[2] + Helper::Quat2RPY(inp.pose.orientation)[2]) and
 			!(fabs(Helper::Quat2RPY(lastPose.pose.orientation)[2]) - fabs(Helper::Quat2RPY(inp.pose.orientation)[2])))
 			continue;
 		result.push_back(input);
@@ -110,9 +110,9 @@ CommandStateActionQ PTAMLearner::getBestQStateAction(geometry_msgs::PoseStamped 
 			lastBestQStateAction = nullTuple;
 			return getRandomStateAction();
 		}
-	}	
+	}
 
-		
+
 	else if(index!=-1 and result.size())
 	{
 		cout<<"setting lastBestQStateAction"<<endl;
@@ -134,7 +134,7 @@ CommandStateActionQ PTAMLearner::getEpsilonGreedyStateAction(float epsilon, geom
 //random policy
 CommandStateActionQ PTAMLearner::getRandomStateAction()
 {
-	vector<geometry_msgs::PoseStamped > trajectories = Helper::getPoses();	
+	vector<geometry_msgs::PoseStamped > trajectories = Helper::getPoses();
 	cout<<trajectories.size()<<endl;
 	return getAction(trajectories[rand()%trajectories.size()]);
 }
@@ -144,7 +144,7 @@ CommandStateActionQ PTAMLearner::getThresholdedRandomStateAction(float qThreshol
 {
 	CommandStateActionQ result;
 
-	do 
+	do
 	{
 		result = getRandomStateAction();
 		maxIters--;
@@ -158,11 +158,11 @@ CommandStateActionQ PTAMLearner::getThresholdedClosestAngleStateAction(float qTh
 {
 	vector<CommandStateActionQ> potentialInputs;
 	getActions();
-	
+
 	for(auto input : possibleTrajectories)
 		if(get<2>(input) > qThreshold)
 			potentialInputs.push_back(input);
-	  
+
 	if(potentialInputs.size()<1)
 		return getBestQStateAction(lastPose);
 	else
@@ -170,12 +170,14 @@ CommandStateActionQ PTAMLearner::getThresholdedClosestAngleStateAction(float qTh
 		cout<<"THRESHOLDED SIZE "<<potentialInputs.size()<<endl;
 		CommandStateActionQ result = potentialInputs[rand()%potentialInputs.size()];
 		//need to change this to take the SLAM pose
-		float currentAngle = Helper::Quat2RPY(robotWorldPose.orientation)[2], min_diff = numeric_limits<float>::infinity(), angle_diff;
-		
+		//float currentAngle = Helper::Quat2RPY(robotWorldPose.orientation)[2],
+		float min_diff = numeric_limits<float>::infinity(), angle_diff;
+
 		for(auto input : potentialInputs)
-		{	
+		{
 			geometry_msgs::PoseStamped command = get<0>(input);
-			angle_diff = fabs(nextAngle - (currentAngle + Helper::Quat2RPY(command.pose.orientation)[2]));
+			//angle_diff = fabs(nextAngle - (currentAngle + Helper::Quat2RPY(command.pose.orientation)[2]));
+			angle_diff = fabs(nextAngle - (Helper::Quat2RPY(command.pose.orientation)[2]));
 			if(angle_diff<=min_diff)
 			{
 				min_diff = angle_diff;
@@ -198,7 +200,7 @@ vector<CommandStateActionQ> PTAMLearner::getSLActions()
 		if(!predict(get<1>(input)))
 			potentialInputs.push_back(input);
 	return potentialInputs;
-}	
+}
 
 ////get supervised learner actions with angle closest to nextAngle
 CommandStateActionQ PTAMLearner::getSLClosestAngleStateAction(float nextAngle)
@@ -208,11 +210,11 @@ CommandStateActionQ PTAMLearner::getSLClosestAngleStateAction(float nextAngle)
 
 	vector<CommandStateActionQ> potentialInputs = getSLActions();
 	float currentAngle = Helper::Quat2RPY(robotWorldPose.orientation)[2], min_diff = numeric_limits<float>::infinity(), angle_diff;
-		
+
 	CommandStateActionQ result = getRandomStateAction();
 	for(auto input : potentialInputs)
 	{
-		geometry_msgs::PoseStamped command = get<0>(input); 
+		geometry_msgs::PoseStamped command = get<0>(input);
 		angle_diff = fabs(nextAngle - (currentAngle + Helper::Quat2RPY(command.pose.orientation)[2]));
 		if(angle_diff<=min_diff)
 		{
@@ -229,7 +231,7 @@ CommandStateActionQ PTAMLearner::getSLRandomStateAction()
 		return getRandomStateAction();
 
 	vector<CommandStateActionQ> potentialInputs = getSLActions();
-	
+
 	if(potentialInputs.size())
 		return potentialInputs[rand()%potentialInputs.size()];
 	else
@@ -246,16 +248,16 @@ CommandStateActionQ PTAMLearner::getBestSLStateAction(geometry_msgs::PoseStamped
 	int index;
 	float maxDist = -numeric_limits<float>::infinity();  //init max Distance to -infinity
 	float dist;
-	
+
 	for(auto input : potentialInputs)
-	{	
+	{
 		geometry_msgs::PoseStamped inp = get<0>(input);
-		if(!(Helper::sign(lastPose.pose.position.x) + Helper::sign(inp.pose.position.x)) and 
-			!(Helper::Quat2RPY(lastPose.pose.orientation)[2] + Helper::Quat2RPY(inp.pose.orientation)[2]) and 
+		if(!(Helper::sign(lastPose.pose.position.x) + Helper::sign(inp.pose.position.x)) and
+			!(Helper::Quat2RPY(lastPose.pose.orientation)[2] + Helper::Quat2RPY(inp.pose.orientation)[2]) and
 			!(fabs(Helper::Quat2RPY(lastPose.pose.orientation)[2]) - fabs(Helper::Quat2RPY(inp.pose.orientation)[2])))
 			continue;
 		result.push_back(input);
-		dist = distance(get<1>(result.back()));	
+		dist = distance(get<1>(result.back()));
 		if(maxDist<dist)
 		{
 			maxDist = dist;
@@ -265,7 +267,7 @@ CommandStateActionQ PTAMLearner::getBestSLStateAction(geometry_msgs::PoseStamped
 
 	if(maxDist == -numeric_limits<float>::infinity())
 		return getSLRandomStateAction();
-	
+
 	return result[index];
 }
 

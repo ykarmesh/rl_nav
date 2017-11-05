@@ -17,7 +17,6 @@ std_msgs::Bool Helper::ptamInfo;
 geometry_msgs::Pose Helper::robotWorldPose;
 pcl::PointCloud<pcl::PointXYZ> Helper::currentPointCloud;
 ros::ServiceClient Helper::posePointCloudClient;
-int Helper::MAP;
 bool Helper::up, Helper::down, Helper::left, Helper::right;
 nav_msgs::OccupancyGrid Helper::grid;
 tf::TransformListener* Helper::listener = NULL;
@@ -33,10 +32,8 @@ Helper::Helper()
 	gazeboModelStates_sub = nh.subscribe("/gazebo/model_states", 100, &Helper::gazeboModelStatesCb, this);
 	OccupancyGrid_sub = nh.subscribe("/move_base/global_costmap/costmap", 1, &Helper::OccupancyGridCb, this);
 	nh.param("robot_radius", robot_radius, 0.2);
-	MAP=-1;
 	up = down = left = right = true;
 	ros::NodeHandle p_nh("~");
-	p_nh.getParam("map", MAP);
 }
 
 //CALLBACKS---------------------------------------------------------------
@@ -122,7 +119,7 @@ geometry_msgs::PoseStamped Helper::getPoseFromInput(geometry_msgs::PoseStamped i
 	p.position.z = input.pose.position.x;
 	p.position.x = -input.pose.position.y;
 	p.position.y = 0.0;
-	p.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, Quat2RPY(input.pose.orientation)[2],0.0);
+	p.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, -Quat2RPY(input.pose.orientation)[2],0.0);
 	tf::quaternionMsgToTF(currentPose.orientation, currentQuat);
 	tf::Transform currentTF(tf::Matrix3x3(currentQuat), tf::Vector3(currentPose.position.x,currentPose.position.y,currentPose.position.z));
 
@@ -154,17 +151,18 @@ bool Helper::inLimits(geometry_msgs::PointStamped point)
 	int cellx = ceil((point.point.x-grid.info.origin.position.x)/res);
 	int celly = ceil((point.point.y-grid.info.origin.position.y)/res);
 	int cellradius = ceil(robot_radius/res);
+	//std::cout<<" Pointx "<<point.point.x<<" Pointy "<<point.point.y<<std::endl;
 	//std::cout<<" Cellx "<<cellx<<" celly "<<celly<<std::endl;
-	float data = grid.data[(cellx)+(celly)*grid.info.height];
-	/*float data1 = grid.data[(cellx+cellradius)+(celly)*grid.info.height];
+	//std::cout<<" current "<<(cellx)+(celly)*grid.info.width<<" dusra "<<(celly)+(cellx)*grid.info.height<<std::endl;
+	float data = grid.data[(cellx)+(celly)*grid.info.width];
+	float data1 = grid.data[(cellx+cellradius)+(celly)*grid.info.height];
 	float data2 = grid.data[(cellx-cellradius)+(celly)*grid.info.height];
 	float data3 = grid.data[(cellx)+(celly-cellradius)*grid.info.height];
-	float data4 = grid.data[(cellx)+(celly+cellradius)*grid.info.height];*/
-	//std::cout<<" data1 "<<data1<<" data2 "<<data2<<" data3 "<<data3<<" data4 "<<data4<<std::endl;
-
+	float data4 = grid.data[(cellx)+(celly+cellradius)*grid.info.height];
+	//std::cout<<" data "<<data<<" data1 "<<data1<<" data2 "<<data2<<" data3 "<<data3<<" data4 "<<data4<<std::endl;
 	//if((data < 20)&&(data!=-1))
-	//if((data1 > 20) || (data2 > 20) || (data3 > 20) || (data4 > 20))
-	if(data > 20)
+	//if(data > 20)
+	if((data1 > 20) || (data2 > 20) || (data3 > 20) || (data4 > 20))
 	{ //std::cout<<"false"<<"\n";
 		return false;
 	}
@@ -179,22 +177,40 @@ vector<geometry_msgs::PoseStamped > Helper::getPoses()
 	float angle = PI/90.0, num_angles = 14;
 	geometry_msgs::PointStamped point;
 	vector<geometry_msgs::PoseStamped > inputs;
-	vector<double> orientation = Quat2RPY(pose.pose.orientation);
 	geometry_msgs::PoseStamped pose_odom;
+	tf::StampedTransform Tow, Twc;
+	tf::Transform Toc;
 	try
 	{
-		listener->waitForTransform("/odom", "/world", ros::Time::now(), ros::Duration(0.2));
-		listener->transformPose("/odom", pose, pose_odom);
+		//listener->waitForTransform("/odom", "/world", ros::Time::now(), ros::Duration(0.2));
+		//listener->transformPose("/odom", pose, pose_odom);
+		listener->lookupTransform( "/odom" , "/world" , ros::Time::now() , Tow );
 	}
 	catch (tf::TransformException &ex)
 	{
-		ROS_ERROR("%s",ex.what());
-		return inputs;
+		try
+		{
+			listener->lookupTransform( "/odom" , "/world" , ros::Time(0) , Tow );
+			ROS_ERROR( " Transform from world to odom frame is unavailable for the time requested. Using latest instead. \n " );
+		}
+		catch (tf::TransformException &ex)
+		{
+			ROS_ERROR_STREAM( " Transform from world to odom frame is unavailable. Error was " << ex.what() << "\n" );
+			return inputs;
+		}
 	}
+	tf::poseMsgToTF(pose.pose, Twc);
+	Toc = Tow * Twc;
+	tf::poseTFToMsg(Toc, pose_odom.pose);
+	pose_odom.header.stamp = pose.header.stamp;
+	pose_odom.header.frame_id = "/odom";
+	double orientation = Quat2RPY(pose_odom.pose.orientation)[2] + 1.57; //converting camera to base_link in orientation
+	//std::cout<<" orientation "<< orientation << "position x" << pose_odom.pose.position.x << " y " << pose_odom.pose.position.y <<std::endl;
+
 	for(float i=-num_angles*angle ; i<=num_angles*angle ; i+=angle)
 	{
 		geometry_msgs::PoseStamped inp;
-		inp.header.frame_id="base_link";
+		inp.header.frame_id = "base_link";
 		point.header.stamp = ros::Time::now();
 		point.header.frame_id = "odom";
 
@@ -204,12 +220,15 @@ vector<geometry_msgs::PoseStamped > Helper::getPoses()
 				continue;
 			if(i>0 and !left)
 				continue;
-			point.point.x = pose_odom.pose.position.x + cos(orientation[2] + i);
-			point.point.y = pose_odom.pose.position.y + sin(orientation[2] + i);
+			point.point.x = pose_odom.pose.position.x + cos(orientation + i);
+			point.point.y = pose_odom.pose.position.y + sin(orientation + i);
 			if(inLimits(point))
 			{	inp.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, i);
 				inp.pose.position.x = cos(i);
 				inp.pose.position.y = sin(i);
+				/*inp.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0,orientation + i);
+				inp.pose.position.x = pose_odom.pose.position.x + cos(orientation + i);
+				inp.pose.position.y = pose_odom.pose.position.y + sin(orientation + i);*/
 				inp.header.stamp = ros::Time::now();
 				inputs.push_back(inp);
 			}
@@ -221,16 +240,18 @@ vector<geometry_msgs::PoseStamped > Helper::getPoses()
 				continue;
 			if(i<0 and !right)
 				continue;
-			point.point.x = pose_odom.pose.position.x - cos(orientation[2] - i);
-			point.point.y = pose_odom.pose.position.y - sin(orientation[2] - i);
+			point.point.x = pose_odom.pose.position.x - cos(orientation - i);
+			point.point.y = pose_odom.pose.position.y - sin(orientation - i);
 			if(inLimits(point))
 			{	inp.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, -i);
 				inp.pose.position.x = -cos(-i);
 				inp.pose.position.y = -sin(-i);
+				/*inp.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, orientation - i);
+				inp.pose.position.x = pose_odom.pose.position.x - cos(orientation - i);
+				inp.pose.position.y = pose_odom.pose.position.y - sin(orientation - i);*/
 				inp.header.stamp = ros::Time::now();
 				inputs.push_back(inp);
 			}
-			std::cout<<std::endl;
 		}
 	}
 	return inputs;

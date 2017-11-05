@@ -103,7 +103,7 @@ private:
 	tf::TransformBroadcaster tfBroadcaster;
 
 	string MODE;
-	int MAX_EPISODES, MAX_STEPS, MAP;
+	int MAX_EPISODES, MAX_STEPS;
 	float Q_THRESH;
 	double INIT_ANGLE;
 	string LOCAL_PLANNER;

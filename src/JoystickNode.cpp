@@ -122,7 +122,6 @@ JoystickNode::JoystickNode()
 	initState.reference_frame = "world";
 	initState.pose.position.z = 0;
 
-	MAP=-1;
 	ros::NodeHandle p_nh("~");
 	p_nh.getParam("qThresh", Q_THRESH);
 	p_nh.getParam("mode", MODE);
@@ -131,7 +130,6 @@ JoystickNode::JoystickNode()
 	p_nh.getParam("init_x", initState.pose.position.x);
 	p_nh.getParam("init_y", initState.pose.position.y);
 	p_nh.getParam("init_Y", initYaw);
-	p_nh.getParam("map", MAP);
 	p_nh.getParam("vel_scale", vel_scale);
 	p_nh.getParam("init_angle", INIT_ANGLE);
 	p_nh.getParam("local_planner", LOCAL_PLANNER);
@@ -162,7 +160,6 @@ JoystickNode::~JoystickNode()
 	p_nh.deleteParam("init_x");
 	p_nh.deleteParam("init_y");
 	p_nh.deleteParam("init_Y");
-	p_nh.deleteParam("map");
 	p_nh.deleteParam("vel_scale");
 	p_nh.deleteParam("init_angle");
 
@@ -297,45 +294,45 @@ void JoystickNode::poseCb(const geometry_msgs::PoseStampedPtr posePtr)
 void JoystickNode::globalNextPoseCb(const nav_msgs::PathPtr pathPtr)
 {
 	pthread_mutex_lock(&globalPlanner_mutex);
-	geometry_msgs::Pose pose, prev_pose;
+	geometry_msgs::Pose current_pose, prev_pose;
 	tf::Pose To1, To2, T12;
+	tf::StampedTransform transformbc;
 
 	float distance = 0;
-	int iter = 0;
 	prev_pose.position.x = pathPtr->poses[0].pose.position.x;
 	prev_pose.position.y = pathPtr->poses[0].pose.position.y;
 	tf::poseMsgToTF(pathPtr->poses[0].pose, To1);
 	for(int i=0; i < pathPtr->poses.size(); i++)
 	{
-		pose = pathPtr->poses[i].pose;
-		distance+= sqrt(pow((pose.position.x-prev_pose.position.x),2)+pow((pose.position.y-prev_pose.position.y),2));
-		iter = i;
+		current_pose = pathPtr->poses[i].pose;
+		distance+= sqrt(pow((current_pose.position.x-prev_pose.position.x),2)+pow((current_pose.position.y-prev_pose.position.y),2));
 		if(distance>1)
 		{
 			break;
 		}
-		prev_pose = pose;
+		prev_pose = current_pose;
 	}
 	expected_pose.header.stamp = ros::Time::now();
 	expected_pose.header.frame_id = "/base_link";
-	tf::poseMsgToTF(pose, To2);
+	tf::poseMsgToTF(current_pose, To2);
 	T12 = To1.inverse()*To2;
-	tf::poseTFToMsg(T12, expected_pose.pose);
 
-	//std::cout<<" temp_pose.x "<<temp_pose.position.x<<" temp_pose.y "<<temp_pose.position.y<<" temp_pose.yaw "<<Helper::Quat2RPY(temp_pose.orientation)[2]<<std::endl;
-	/*try
+	try
 	{
-		listener->waitForTransform("/base_link", "/odom", ros::Time::now(), ros::Duration(0.1));
-		listener->transformPose("/base_link", temp, expected_pose);
+		listener->lookupTransform("/base_link", "/camera_rgb_optical_frame", ros::Time(0), transformbc);
 	}
 	catch (tf::TransformException &ex)
 	{
 		ROS_ERROR("%s",ex.what());
-		pthread_mutex_unlock(&globalPlanner_mutex);
 		return;
-	}*/
-	//std::cout<<" expected_pose.x "<<expected_pose.pose.position.x<<" expected_pose.y "<<expected_pose.pose.position.y<<" expected_pose.yaw "<<Helper::Quat2RPY(expected_pose.pose.orientation)[2]<<std::endl;
-	float Q; //Q value of the last state-action pair
+	}
+
+	tf::poseTFToMsg(T12, expected_pose.pose);
+	expected_pose.pose.position.x = expected_pose.pose.position.x  + transformbc.getOrigin().getX();
+	expected_pose.pose.position.y = expected_pose.pose.position.y  + transformbc.getOrigin().getY();
+	expected_pose.pose.position.z = expected_pose.pose.position.z  + transformbc.getOrigin().getZ();
+
+	float Q;
 	vector<int> stateAction;
 	tie(ignore, stateAction, Q) = learner.getAction(expected_pose); //convert the subsequent part of the trajectory into a RL state-action pair
 
@@ -355,6 +352,7 @@ void JoystickNode::globalNextPoseCb(const nav_msgs::PathPtr pathPtr)
 	if(!info.data)
 	{
 		planner_reset_pub.publish(actionlib_msgs::GoalID());//stop planner
+		planner_reset_pub.publish(actionlib_msgs::GoalID());
 		cout<<"UH OH!!!"<<endl<<"Breaking after:\t";
 		for(auto i: stateAction)
 			cout<<i<<'\t';
@@ -544,14 +542,6 @@ void JoystickNode::goalCb(const geometry_msgs::PoseStampedPtr goalPosePtr)
 }
 
 /**
- *	Receiving the waypoint
-
-void JoystickNode::waypointCb(const geometry_msgs::PoseStampedPtr waypointPosePtr)
-{
-	waypointPose = waypointPosePtr->pose;
-}
-*/
-/**
  *	Sending commands to the robot
  */
 void JoystickNode::sendCommandCb(std_msgs::Empty empty)
@@ -598,7 +588,7 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 			tf::poseMsgToTF(pose.pose, Twc);
 			T12 = To1.inverse()*To2;
 			tf::poseTFToMsg(T12, expected_pose.pose);*/
-			geometry_msgs::PoseStamped expected_pose_w2D;
+			/*geometry_msgs::PoseStamped expected_pose_w2D;
 			try
 			{
 				listener->waitForTransform("/world2D", "/base_link", ros::Time(0), ros::Duration(0.1));
@@ -608,8 +598,8 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 			{
 				ROS_ERROR("%s",ex.what());
 				return;
-			}
-			float nextAngle = Helper::Quat2RPY(expected_pose_w2D.pose.orientation)[2];
+			}*/
+			float nextAngle = Helper::Quat2RPY(expected_pose.pose.orientation)[2];
 
 			tie(lastPose, RLInput, prevQ) = learner.getThresholdedClosestAngleStateAction(Q_THRESH, nextAngle, lastPose);
 			//tie(lastPose, RLInput, prevQ) = learner.getSLClosestAngleStateAction(nextAngle);

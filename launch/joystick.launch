@@ -21,7 +21,7 @@
 		<remap from="/vslam/info" to="/ORB_SLAM2/Status" />
 		<!-- orb slam -->
 		<param name="init_angle" type="double" value="0" />
-		<param name="robot_radius" type="double" value="0.17" />	
+		<param name="robot_radius" type="double" value="0.20" />	
 		
 		<!-- ptam -->
 		<!-- <param name="init_angle" type="double" value="3.14" />	 -->
@@ -33,43 +33,37 @@
 	        <!-- <param name="mode" type="string" value="MAP" />	
 		<param name="init_x" type="double" value="2.6" />
 		<param name="init_y" type="double" value="2.6" />
-		<param name="init_Y" type="double" value="1.0472" /> 
-		<param name="map" type="int" value="1" />  -->
+		<param name="init_Y" type="double" value="1.0472" />  -->
 
 		
 		<!-- map 2 -->
 		<!--<param name="mode" type="string" value="MAP" />
 		<param name="init_x" type="double" value="1.22755896" />
 		<param name="init_y" type="double" value="1.76695301" />
-		<param name="init_Y" type="double" value="1.282365" />
-		<param name="map" type="int" value="2" />-->
+		<param name="init_Y" type="double" value="1.282365" /> -->
 
 		<!-- map 3 -->
 		<!--<param name="mode" type="string" value="MAP" />
 		<param name="init_x" type="double" value="2" />
 		<param name="init_y" type="double" value="2" />
-		<param name="init_Y" type="double" value="0" />
-		<param name="map" type="int" value="3" />-->
+		<param name="init_Y" type="double" value="0" /> -->
 
 		<!-- corridor map -->
 		<!-- <param name="mode" type="string" value="MAP" />
 		<param name="init_x" type="double" value="-3" />
 		<param name="init_y" type="double" value="-1.81" />
-		<param name="init_Y" type="double" value="1.282365" />
-		<param name="map" type="int" value="4" /> -->
+		<param name="init_Y" type="double" value="1.282365" /> -->
 
 		<!-- training map -->
 		<!-- <param name="init_x" type="double" value="-1" />
 		<param name="init_y" type="double" value="1" />
-		<param name="init_Y" type="double" value="0.4" />
-		<param name="map" type="int" value="-1" /> -->
+		<param name="init_Y" type="double" value="0.4" /> -->
 
 		 <!-- rooms map -->
 		<param name="mode" type="string" value="MAP" />	
 		<param name="init_x" type="double" value="2.6" />
 		<param name="init_y" type="double" value="2.6" />
 		<param name="init_Y" type="double" value="1.0472" /> 
-		<param name="map" type="int" value="5" />
 		<!-- <remap from="/cmd_vel_mux/input/teleop" to="/cmd_vel" /> -->
 
 	</node>
