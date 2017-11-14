@@ -35,6 +35,7 @@ public:
 	PTAMLearner();
 
 	CommandStateActionQ getAction(geometry_msgs::PoseStamped inputPose);
+	CommandStateActionQ getAction(geometry_msgs::PoseStamped inputPose, pcl::PointCloud<pcl::PointXYZ> nextPointCloud);
 	CommandStateActionQ getRandomStateAction();
 	CommandStateActionQ getThresholdedRandomStateAction(float qThreshold, int maxIters);
 	CommandStateActionQ getBestQStateAction(geometry_msgs::PoseStamped lastPose);

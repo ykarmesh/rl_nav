@@ -43,7 +43,7 @@ void PTAMLearner::getActions()
 			possibleTrajectories.push_back(getAction(trajectory));
 }
 
-//convert a given bernstein input relative to the robot camera frame into a state-action pair and get the Q value
+//convert a given bernstein input relative to the robot camera frame into a state-action pair and get the Q valueG
 CommandStateActionQ PTAMLearner::getAction(geometry_msgs::PoseStamped inputPose)
 {
 	vector<int> rl_input;

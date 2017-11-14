@@ -12,10 +12,10 @@ pthread_mutex_t Helper::pointCloud_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t Helper::costmap_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 geometry_msgs::PoseStamped Helper::pose;
-//ptam_com::ptam_info Helper::ptamInfo;
+sensor_msgs::CameraInfo Helper::cam_info;
 std_msgs::Bool Helper::ptamInfo;
 geometry_msgs::Pose Helper::robotWorldPose;
-pcl::PointCloud<pcl::PointXYZ> Helper::currentPointCloud;
+sensor_msgs::PointCloud2 Helper::currentPointCloud;
 ros::ServiceClient Helper::posePointCloudClient;
 bool Helper::up, Helper::down, Helper::left, Helper::right;
 nav_msgs::OccupancyGrid Helper::grid;
@@ -31,6 +31,7 @@ Helper::Helper()
 	pointCloud_sub = nh.subscribe("/vslam/frame_points", 100, &Helper::pointCloudCb, this);
 	gazeboModelStates_sub = nh.subscribe("/gazebo/model_states", 100, &Helper::gazeboModelStatesCb, this);
 	OccupancyGrid_sub = nh.subscribe("/move_base/global_costmap/costmap", 1, &Helper::OccupancyGridCb, this);
+	cameraInfo_sub = nh.subscribe("/camera/camera_info", 1, &Helper::cameraInfoCb, this);
 	nh.param("robot_radius", robot_radius, 0.2);
 	up = down = left = right = true;
 	ros::NodeHandle p_nh("~");
@@ -59,7 +60,7 @@ void Helper::gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelStatesPt
 	pthread_mutex_unlock(&gazeboModelState_mutex);
 }
 
-void Helper::pointCloudCb(const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloudPtr)
+void Helper::pointCloudCb(const sensor_msgs::PointCloud2::ConstPtr pointCloudPtr)
 {
 	pthread_mutex_lock(&pointCloud_mutex);
 	currentPointCloud = *pointCloudPtr;
@@ -72,20 +73,28 @@ void Helper::OccupancyGridCb(const nav_msgs::OccupancyGrid::ConstPtr &OGPtr)
 	grid = *OGPtr;
 	pthread_mutex_unlock(&costmap_mutex);
 }
+
+void Helper::cameraInfoCb(const sensor_msgs::CameraInfo::ConstPtr &camerainfo)
+{
+	cam_info = *camerainfo;
+}
 //-----------------------------------------------------------------------
 
 //Get ROS pointcloud2 at position relative to camera frame given as bernstein input
 sensor_msgs::PointCloud2 Helper::getPointCloud2AtPosition(geometry_msgs::PoseStamped input)
 {
-	ORB_SLAM2::PosePointCloud posePointCloud;
-
+  //ORB_SLAM2::PosePointCloud posePointCloud;
+  geometry_msgs::PoseStamped pose;
 	//PoseStamped from the new point
+	sensor_msgs::PointCloud2 pointCloud;
 	pthread_mutex_lock(&pose_mutex);
-	posePointCloud.request.pose = getPoseFromInput(input, Helper::pose);
+	pose = getPoseFromInput(input, Helper::pose);
 	pthread_mutex_unlock(&pose_mutex);
-
-	posePointCloudClient.call(posePointCloud);
-	return posePointCloud.response.pointCloud;
+  ros::Time start = ros::Time::now();
+	//posePointCloudClient.call(posePointCloud);
+	pointCloud = PosePointCloudFunction(pose);
+	//return posePointCloud.response.pointCloud;
+	return pointCloud;
 }
 
 //Get PCL pointcloud at position relative to camera frame given as bernstein input
@@ -94,6 +103,108 @@ pcl::PointCloud<pcl::PointXYZ> Helper::getPCLPointCloudAtPosition(geometry_msgs:
 	pcl::PointCloud<pcl::PointXYZ> pointCloud;
 	pcl::fromROSMsg(Helper::getPointCloud2AtPosition(input), pointCloud);
 	return pointCloud;
+}
+
+sensor_msgs::PointCloud2 Helper::PosePointCloudFunction(const geometry_msgs::PoseStamped currentpose)
+{
+    ros::Time start = ros::Time::now();
+
+    //cv::Mat Ow = -Rpw.t()*tpw;
+    tf::Pose Twc, Tcw, Twc0;
+		tf::Point Twp, Tcp, Tc0p;
+		tf::poseMsgToTF(currentpose.pose,Twc);
+		Tcw = Twc.inverse();
+
+		tf::poseMsgToTF(pose.pose, Twc0);
+
+    float fx = cam_info.P[0];
+    float fy = cam_info.P[5];
+    float cx = cam_info.P[2];
+    float cy = cam_info.P[6];
+
+		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::fromROSMsg(currentPointCloud, *cloud);
+
+    sensor_msgs::PointCloud2 pointCloud;
+
+    pointCloud.header.frame_id=MAP_FRAME_ID;
+    pointCloud.header.stamp=ros::Time::now();
+    pointCloud.header.seq=0;
+    pointCloud.fields.resize(3);
+    pointCloud.fields[0].name = "x";
+    pointCloud.fields[0].offset = 0*sizeof(uint32_t);
+    pointCloud.fields[0].datatype = sensor_msgs::PointField::FLOAT32;
+    pointCloud.fields[0].count = 1;
+    pointCloud.fields[1].name = "y";
+    pointCloud.fields[1].offset = 1*sizeof(uint32_t);
+    pointCloud.fields[1].datatype = sensor_msgs::PointField::FLOAT32;
+    pointCloud.fields[1].count = 1;
+    pointCloud.fields[2].name = "z";
+    pointCloud.fields[2].offset = 2*sizeof(uint32_t);
+    pointCloud.fields[2].datatype = sensor_msgs::PointField::FLOAT32;
+    pointCloud.fields[2].count = 1;
+    pointCloud.point_step = 3*sizeof(uint32_t);
+    pointCloud.is_dense = false;
+    pointCloud.data.clear();
+    pointCloud.height = 1;
+    pointCloud.width = currentPointCloud.width;
+    pointCloud.row_step = pointCloud.point_step * pointCloud.width;
+    pointCloud.data.resize(pointCloud.row_step * pointCloud.height);
+    unsigned char* dat = &(pointCloud.data[0]);
+    int num_points = 0;
+
+    for(pcl::PointCloud<pcl::PointXYZ>::iterator vit=cloud->begin(); vit!=cloud->end(); vit++)
+    {
+
+	      geometry_msgs::Point P;
+				P.x = vit->x;
+				P.y = vit->y;
+				P.z = vit->z;
+
+        // 3D in camera coordinates
+        //const cv::Mat Pc = Rpw*P+tpw;
+				tf::pointMsgToTF(P,Twp);
+				Tcp = Tcw*Twp;
+        const float &PcX = Tcp.getX();
+        const float &PcY = Tcp.getY();
+        const float &PcZ = Tcp.getZ();
+				float dist = sqrt(pow(PcX,2)+pow(PcY,2)+pow(PcZ,2));
+
+				Tc0p = Twc0.inverse()*Twp;
+				const float &Pc0X = Tc0p.getX();
+				const float &Pc0Y = Tc0p.getY();
+  			const float &Pc0Z = Tc0p.getZ();
+				float normal = sqrt(pow(Pc0X,2)+pow(Pc0Y,2)+pow(Pc0Z,2));
+
+        // Check positive depth
+        if(PcZ<0.01f)
+            continue;
+
+        // Project in image and check it is not outside
+        const float invz = 1.0f/PcZ;
+        const float u=fx*PcX*invz+cx;
+        const float v=fy*PcY*invz+cy;
+
+        if(u<0 || u>cam_info.width)
+					continue;
+  			if(v<0 || v>cam_info.height)
+					continue;
+
+        const float viewCos = (PcX*Pc0X+PcY*Pc0Y+PcZ*Pc0Z)/(normal*dist);
+
+        if(viewCos<0.5)
+					continue;
+
+        memcpy(dat, &(vit->x), sizeof(float));
+        memcpy(dat+sizeof(float), &(vit->y), sizeof(float));
+        memcpy(dat+2*sizeof(float), &(vit->z), sizeof(float));
+        num_points++;
+        dat+=pointCloud.point_step;
+    }
+    pointCloud.width=num_points;
+    pointCloud.row_step = pointCloud.point_step * pointCloud.width;
+    pointCloud.data.resize(pointCloud.row_step * pointCloud.height);
+    return pointCloud;
 }
 
 //Quaternion to RPY
@@ -182,7 +293,7 @@ vector<geometry_msgs::PoseStamped > Helper::getPoses()
 	tf::Transform Toc;
 	try
 	{
-		//listener->waitForTransform("/odom", "/world", ros::Time::now(), ros::Duration(0.2));
+		listener->waitForTransform("/odom", "/world", ros::Time::now(), ros::Duration(0.1));
 		//listener->transformPose("/odom", pose, pose_odom);
 		listener->lookupTransform( "/odom" , "/world" , ros::Time::now() , Tow );
 	}
@@ -191,7 +302,7 @@ vector<geometry_msgs::PoseStamped > Helper::getPoses()
 		try
 		{
 			listener->lookupTransform( "/odom" , "/world" , ros::Time(0) , Tow );
-			ROS_ERROR( " Transform from world to odom frame is unavailable for the time requested. Using latest instead. \n " );
+			ROS_ERROR_STREAM( " Transform from world to odom frame is unavailable for the time requested. "<< ros::Time::now() <<" Using latest instead. " <<ros::Time(0)<< "\n " );
 		}
 		catch (tf::TransformException &ex)
 		{
@@ -199,13 +310,14 @@ vector<geometry_msgs::PoseStamped > Helper::getPoses()
 			return inputs;
 		}
 	}
+	pthread_mutex_lock(&pose_mutex);
 	tf::poseMsgToTF(pose.pose, Twc);
 	Toc = Tow * Twc;
 	tf::poseTFToMsg(Toc, pose_odom.pose);
 	pose_odom.header.stamp = pose.header.stamp;
 	pose_odom.header.frame_id = "/odom";
 	double orientation = Quat2RPY(pose_odom.pose.orientation)[2] + 1.57; //converting camera to base_link in orientation
-	//std::cout<<" orientation "<< orientation << "position x" << pose_odom.pose.position.x << " y " << pose_odom.pose.position.y <<std::endl;
+	pthread_mutex_unlock(&pose_mutex);
 
 	for(float i=-num_angles*angle ; i<=num_angles*angle ; i+=angle)
 	{

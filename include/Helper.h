@@ -19,11 +19,13 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Quaternion.h>
+#include <sensor_msgs/CameraInfo.h>
 //#include <ptam_com/ptam_info.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <std_msgs/Bool.h>
 #include <ORB_SLAM2/PosePointCloud.h>
 #include <pcl_ros/point_cloud.h>
+#include <pcl/conversions.h>
 #include <gazebo_msgs/ModelStates.h>
 
 #include <tf/transform_datatypes.h>
@@ -59,26 +61,28 @@ class Helper
 	static pthread_mutex_t pose_mutex, info_mutex, gazeboModelState_mutex, pointCloud_mutex, costmap_mutex;
 
 	static geometry_msgs::PoseStamped pose;
-	//static ptam_com::ptam_info ptamInfo;
+	static sensor_msgs::CameraInfo cam_info;
 	static std_msgs::Bool ptamInfo;
 	static geometry_msgs::Pose robotWorldPose;
-	static pcl::PointCloud<pcl::PointXYZ> currentPointCloud;
+	static sensor_msgs::PointCloud2 currentPointCloud;
 
 	ros::NodeHandle nh;
-	ros::Subscriber pose_sub, info_sub, gazeboModelStates_sub, pointCloud_sub, OccupancyGrid_sub;
+	ros::Subscriber pose_sub, info_sub, gazeboModelStates_sub, pointCloud_sub, OccupancyGrid_sub, cameraInfo_sub	;
 	static ros::ServiceClient posePointCloudClient;
 
 	void poseCb(const geometry_msgs::PoseStampedPtr posePtr);
 	//void ptamInfoCb(const ptam_com::ptam_infoPtr ptamInfoPtr);
 	void ptamInfoCb(const std_msgs::BoolPtr ptamInfoPtr);
 	void gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelStatesPtr);
-	void pointCloudCb(const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloudPtr);
+	void pointCloudCb(const sensor_msgs::PointCloud2::ConstPtr pointCloudPtr);
 	void OccupancyGridCb(const nav_msgs::OccupancyGrid::ConstPtr &OGPtr);
+        void cameraInfoCb(const sensor_msgs::CameraInfo::ConstPtr &Camerainfo);
 
 public:
 	Helper();
 	static sensor_msgs::PointCloud2 getPointCloud2AtPosition(geometry_msgs::PoseStamped input);
 	static pcl::PointCloud<pcl::PointXYZ> getPCLPointCloudAtPosition(geometry_msgs::PoseStamped input);
+        static sensor_msgs::PointCloud2 PosePointCloudFunction(const geometry_msgs::PoseStamped currentpose);
 	static vector<double> Quat2RPY(geometry_msgs::Quaternion quat);
 	static geometry_msgs::PoseStamped getPoseFromInput(geometry_msgs::PoseStamped input, geometry_msgs::PoseStamped pose);
 	static vector<pcl::PointXYZ> pointCloudIntersection(pcl::PointCloud<pcl::PointXYZ> pointCloudA, pcl::PointCloud<pcl::PointXYZ> pointCloudB);
