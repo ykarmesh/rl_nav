@@ -58,7 +58,7 @@ class Helper
 		}
 	};
 
-	static pthread_mutex_t pose_mutex, info_mutex, gazeboModelState_mutex, pointCloud_mutex, costmap_mutex;
+	static pthread_mutex_t pose_mutex, info_mutex, pointCloud_mutex, costmap_mutex; //gazeboModelState_mutex
 
 	static geometry_msgs::PoseStamped pose;
 	static sensor_msgs::CameraInfo cam_info;
@@ -67,13 +67,13 @@ class Helper
 	static sensor_msgs::PointCloud2 currentPointCloud;
 
 	ros::NodeHandle nh;
-	ros::Subscriber pose_sub, info_sub, gazeboModelStates_sub, pointCloud_sub, OccupancyGrid_sub, cameraInfo_sub	;
+	ros::Subscriber pose_sub, info_sub, pointCloud_sub, OccupancyGrid_sub, cameraInfo_sub; //gazeboModelStates_sub
 	static ros::ServiceClient posePointCloudClient;
 
 	void poseCb(const geometry_msgs::PoseStampedPtr posePtr);
 	//void ptamInfoCb(const ptam_com::ptam_infoPtr ptamInfoPtr);
 	void ptamInfoCb(const std_msgs::BoolPtr ptamInfoPtr);
-	void gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelStatesPtr);
+	//void gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelStatesPtr);
 	void pointCloudCb(const sensor_msgs::PointCloud2::ConstPtr pointCloudPtr);
 	void OccupancyGridCb(const nav_msgs::OccupancyGrid::ConstPtr &OGPtr);
         void cameraInfoCb(const sensor_msgs::CameraInfo::ConstPtr &Camerainfo);

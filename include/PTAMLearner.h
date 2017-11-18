@@ -4,7 +4,6 @@
 #include <tuple>
 #include <cmath>
 
-#include <gazebo_msgs/ModelStates.h>
 #include <pcl_ros/point_cloud.h>
 #include <geometry_msgs/PoseStamped.h>
 
@@ -20,15 +19,15 @@ class PTAMLearner : public SarsaLearner, public SupervisedLearner
 {
 private:
 	ros::NodeHandle nh;
-	ros::Subscriber gazeboModelStates_sub, pointCloud_sub;
-	static pthread_mutex_t gazeboModelState_mutex, pointCloud_mutex;
+	ros::Subscriber pose_sub, pointCloud_sub;
+	static pthread_mutex_t pose_mutex, pointCloud_mutex;
 	static int MAX_POINT_OVERLAP;
 
-	geometry_msgs::Pose robotWorldPose;
+	geometry_msgs::PoseStamped pose;
 	pcl::PointCloud<pcl::PointXYZ> currentPointCloud;
 	vector<CommandStateActionQ> possibleTrajectories;
 	CommandStateActionQ lastBestQStateAction;
-	void gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelStatesPtr);
+	void poseCb(const geometry_msgs::PoseStampedPtr posePtr);
 	void pointCloudCb(const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloudPtr);	
 
 public:	

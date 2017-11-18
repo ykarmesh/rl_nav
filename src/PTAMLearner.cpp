@@ -7,25 +7,25 @@
 
 using namespace std;
 
-pthread_mutex_t PTAMLearner::gazeboModelState_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t PTAMLearner::pose_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t PTAMLearner::pointCloud_mutex = PTHREAD_MUTEX_INITIALIZER;
 int PTAMLearner::MAX_POINT_OVERLAP;
 
 PTAMLearner::PTAMLearner()
 {
 	pointCloud_sub = nh.subscribe("/vslam/frame_points", 100, &PTAMLearner::pointCloudCb, this);
-	gazeboModelStates_sub = nh.subscribe("/gazebo/model_states", 100, &PTAMLearner::gazeboModelStatesCb, this);
+	pose_sub = nh.subscribe("/vslam/pose_world", 500, &PTAMLearner::poseCb, this);
 	srand (time(NULL));
 	ros::NodeHandle p_nh("~");
 	p_nh.getParam("MAX_POINT_OVERLAP", MAX_POINT_OVERLAP);
 	lastBestQStateAction = nullTuple;
 }
 
-void PTAMLearner::gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelStatesPtr)
+void PTAMLearner::poseCb(const geometry_msgs::PoseStampedPtr posePtr)
 {
-	pthread_mutex_lock(&gazeboModelState_mutex);
-	robotWorldPose = modelStatesPtr->pose.back();
-	pthread_mutex_unlock(&gazeboModelState_mutex);
+	pthread_mutex_lock(&pose_mutex);
+	pose = *posePtr;
+	pthread_mutex_unlock(&pose_mutex);
 }
 
 void PTAMLearner::pointCloudCb(const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloudPtr)
@@ -209,7 +209,10 @@ CommandStateActionQ PTAMLearner::getSLClosestAngleStateAction(float nextAngle)
 		return getRandomStateAction();
 
 	vector<CommandStateActionQ> potentialInputs = getSLActions();
-	float currentAngle = Helper::Quat2RPY(robotWorldPose.orientation)[2], min_diff = numeric_limits<float>::infinity(), angle_diff;
+	pthread_mutex_lock(&pose_mutex);
+	float currentAngle = Helper::Quat2RPY(pose.pose.orientation)[2] + 1.57;
+	pthread_mutex_unlock(&pose_mutex);
+	float min_diff = numeric_limits<float>::infinity(), angle_diff;
 
 	CommandStateActionQ result = getRandomStateAction();
 	for(auto input : potentialInputs)
