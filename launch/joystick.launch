@@ -61,8 +61,8 @@
 
 		 <!-- rooms map -->
 		<param name="mode" type="string" value="MAP" />	
-		<param name="init_x" type="double" value="2.6" />
-		<param name="init_y" type="double" value="2.6" />
+		<param name="init_x" type="double" value="2.0" />
+		<param name="init_y" type="double" value="2.0" />
 		<param name="init_Y" type="double" value="1.0472" /> 
 		<!-- <remap from="/cmd_vel_mux/input/teleop" to="/cmd_vel" /> -->
 

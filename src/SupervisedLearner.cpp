@@ -11,7 +11,7 @@ SupervisedLearner::SupervisedLearner()
 	ifstream slMatFile(ros::package::getPath("rl_nav")+"/slMatData.txt");
 
 	// Check for failure
-	if(slMatFile == NULL)
+	if(!slMatFile.is_open())
 	{
 		cout<<"Invalid sl file"<<endl;
 		slValid = false;

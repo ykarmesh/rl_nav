@@ -22,7 +22,7 @@ SarsaLearner::SarsaLearner()
 	ifstream wFile(ros::package::getPath("rl_nav")+"/wData.txt");
 
 	// Check for failure
-	if(qMatFile == NULL)
+	if(!qMatFile.is_open())
 	{
 		cout<<"Invalid Q file"<<endl;
 		qValid = false;
@@ -40,7 +40,7 @@ SarsaLearner::SarsaLearner()
 	}
 
 	
-	if(wFile == NULL)
+	if(!wFile.is_open())
 	{
 		cout<<"Invalid w file"<<endl;
 		w = vector<float>(NUM_FEATURES_SA,0);
@@ -66,7 +66,7 @@ SarsaLearner::~SarsaLearner()
 
 	float qValue;
 	// Check for failure
-	if(qMatFile != NULL)
+	if(qMatFile.is_open())
 	{
 		cout<<"Writing to File"<<endl;
 		for(int stateDir = 0; stateDir<STATE_DIR_MAX; stateDir++)
@@ -75,7 +75,7 @@ SarsaLearner::~SarsaLearner()
 						qMatFile << stateDir << " " << stateHead << " " << stateFOV << " " << qMatrix[stateDir][stateHead][stateFOV] << endl;
 	}
 
-	if(wFile != NULL)
+	if(wFile.is_open())
 	{
 		for(int i = 0; i<NUM_FEATURES_SA; i++)
 			wFile << w[i] << " ";
