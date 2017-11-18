@@ -302,7 +302,7 @@ void JoystickNode::globalNextPoseCb(const nav_msgs::PathPtr pathPtr)
 	prev_pose.position.x = pathPtr->poses[0].pose.position.x;
 	prev_pose.position.y = pathPtr->poses[0].pose.position.y;
 	tf::poseMsgToTF(pathPtr->poses[0].pose, To1);
-	for(int i=0; i < pathPtr->poses.size(); i++)
+	for(int i=1; i < pathPtr->poses.size(); i++)
 	{
 		current_pose = pathPtr->poses[i].pose;
 		distance+= sqrt(pow((current_pose.position.x-prev_pose.position.x),2)+pow((current_pose.position.y-prev_pose.position.y),2));
@@ -317,14 +317,17 @@ void JoystickNode::globalNextPoseCb(const nav_msgs::PathPtr pathPtr)
 	tf::poseMsgToTF(current_pose, To2);
 	T12 = To1.inverse()*To2;
 
-	try
+  if(transformbc.getOrigin().getX() == 0)
 	{
-		listener->lookupTransform("/base_link", "/camera_rgb_optical_frame", ros::Time(0), transformbc);
-	}
-	catch (tf::TransformException &ex)
-	{
-		ROS_ERROR("%s",ex.what());
-		return;
+		try
+		{
+			listener->lookupTransform("/base_link", "/camera_rgb_optical_frame", ros::Time(0), transformbc);
+		}
+		catch (tf::TransformException &ex)
+		{
+			ROS_ERROR("%s",ex.what());
+			return;
+		}
 	}
 
 	tf::poseTFToMsg(T12, expected_pose.pose);
@@ -334,8 +337,8 @@ void JoystickNode::globalNextPoseCb(const nav_msgs::PathPtr pathPtr)
 
 	float Q;
 	vector<int> stateAction;
+	//pcl::PointCloud<pcl::PointXYZ> nextPointCloud = Helper::getPCLPointCloudAtPosition(expected_pose);
 	tie(ignore, stateAction, Q) = learner.getAction(expected_pose); //convert the subsequent part of the trajectory into a RL state-action pair
-
 	//ptam_com::ptam_info info;
 	std_msgs::Bool info;
 
@@ -539,6 +542,7 @@ void JoystickNode::plannerStatusCb(const std_msgs::StringPtr plannerStatusPtr)
 void JoystickNode::goalCb(const geometry_msgs::PoseStampedPtr goalPosePtr)
 {
 	goalPose = *goalPosePtr;
+	std::cout<< "GOAL: " << goalPose <<std::endl;
 }
 
 /**
@@ -548,6 +552,7 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 {
 	if(initialized)//will work only if SLAM is initialized
 	{
+		ros::NodeHandle teb_nh("/move_base/TebLocalPlannerROS");
 		geometry_msgs::PoseArray safe_poses, unsafe_poses;
 		float Q;
 		vector<int> RLInput; //last RL Input
@@ -614,7 +619,13 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 		move_base_msgs::MoveBaseGoal goal;
 		goal.target_pose = lastPose;
 		learner.clear();
+		/*if(teb_nh.hasParam("allow_init_with_backwards_motion"))
+		{
+			teb_nh.setParam("allow_init_with_backwards_motion",true);
+		}*/
 		actionClient->sendGoal(goal);
+
+		//teb_nh.setParam("allow_init_with_backwards_motion",false);
 
 		actionClient->waitForResult();
 
@@ -700,12 +711,22 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 					breakCount = 0;
 					goal_pub.publish(goalPose);
 				}
-				else //if it's in TRAIN or TEST modes, execute the next step (recovery atcion)
+				else //if it's in TRAIN or TEST modes, execute the next step (recovery action)
 					sendCommandCb(std_msgs::Empty());
 
 			}
 		}
 		else //if the action was unsuccessful, try again
+		{
+			std_msgs::Bool info;
+			pthread_mutex_lock(&ptamInfo_mutex);
+			info = ptamInfo;
+			pthread_mutex_unlock(&ptamInfo_mutex);
+			if(info.data =! true)
+			{	planner_reset_pub.publish(actionlib_msgs::GoalID());
+				cout<<" Slam broke during recovery behaviour "<<endl;
+			}
 			sendCommandCb(std_msgs::Empty());
+		}
 	}
 }

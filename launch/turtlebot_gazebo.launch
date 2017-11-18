@@ -1,5 +1,9 @@
 <launch>
+<<<<<<< HEAD
 	<arg name="world_file"  default="$(find rl_nav)/launch/include/my_map.world"/>
+=======
+	<arg name="world_file"  default="$(find rl_nav)/launch/include/map3.world"/>
+>>>>>>> a1947c87bf26dcf09295af5476394b35bbc9db3c
   	<arg name="base"      value="$(optenv TURTLEBOT_BASE kobuki)"/> <!-- create, roomba -->
   	<arg name="battery"   value="$(optenv TURTLEBOT_BATTERY /proc/acpi/battery/BAT0)"/>  <!-- /proc/acpi/battery/BAT0 --> 
   	<arg name="gui" default="true"/>
@@ -24,9 +28,9 @@
 		<arg name="Y" value="0.4"/> -->
 
 		<!--map 1--> <!--rooms-->
-		<arg name="x" value="2"/>
+		<!--<arg name="x" value="2"/>
 		<arg name="y" value="2"/>
-		<arg name="Y" value="1.0472"/> 
+		<arg name="Y" value="1.0472"/> -->
  
 		<!--map 2-->
 		<!--<arg name="x" value="1.22755896"/>
@@ -34,9 +38,9 @@
 		<arg name="Y" value="1.282365"/> -->
 	
 		<!--map 3-->
-		<!--<arg name="x" value="1"/>
+		<arg name="x" value="1"/>
 		<arg name="y" value="2"/>
-		<arg name="Y" value="0"/>-->
+		<arg name="Y" value="0"/>
 	
 		<!--corridor-->
 		<!--<arg name="x" value="-3.5"/>
@@ -50,17 +54,29 @@
   	</node>-->
 
   	<!-- map1, rooms -->
+<<<<<<< HEAD
   	<node pkg="tf" type="static_transform_publisher" name="rgb_base" args="0.0 0.0 0.3 -0.683012925973 0.18301186561 -0.18301186561 0.683012925973 world2D world 10"/>
 	<node pkg="tf" type="static_transform_publisher" name="Gazebo_base" args="-2.0 -2.0 0 0 0 0 1 world2D gazebo 10"/>
 
   	<!-- map2 -->
   	<!-- <node pkg="tf" type="static_transform_publisher" name="rgb_base" args="0.0 0.0 0.0 -0.699766257748 0.101622755904 -0.101622755904 0.699766257748 world2D world 10"/> -->
+=======
+  	<!--node pkg="tf" type="static_transform_publisher" name="rgb_base" args="0.0 0.0 0.3 -0.683012925973 0.18301186561 -0.18301186561 0.683012925973 world2D world 1000"/-->
+	<node pkg="tf" type="static_transform_publisher" name="Gazebo_base" args="-2.0 -2.0 0 0 0 0 1 world2D gazebo 1000"/>
+
+  	<!-- map2 -->
+        <!-- <node pkg="tf" type="static_transform_publisher" name="rgb_base" args="0.0 0.0 0.0 -0.699766257748 0.101622755904 -0.101622755904 0.699766257748 world2D world 1000"/> -->
+>>>>>>> a1947c87bf26dcf09295af5476394b35bbc9db3c
 
   	<!-- map3 -->
   	<!-- <node pkg="tf" type="static_transform_publisher" name="rgb_base" args="0.0 0.0 0.0 -0.5 0.5 -0.5 0.5 world2D world 10"/> -->
 
   	<!-- corridor -->
+<<<<<<< HEAD
   	<!-- <node pkg="tf" type="static_transform_publisher" name="rgb_base" args="0.0 0.0 0.0 -0.699766257748 0.101622755904 -0.101622755904 0.699766257748 world2D world 10"/> -->
+=======
+  	<node pkg="tf" type="static_transform_publisher" name="rgb_base" args="0.0 0.0 0.0 -0.699766257748 0.101622755904 -0.101622755904 0.699766257748 world2D world 1000"/>
+>>>>>>> a1947c87bf26dcf09295af5476394b35bbc9db3c
 
 	
 	<!--<node name="rviz" pkg="rviz" type="rviz" args="-d $(find turtlebot_rviz_launchers)/rviz/robot.rviz" />-->
