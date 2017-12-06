@@ -69,17 +69,17 @@ CommandStateActionQ PTAMLearner::getAction(geometry_msgs::PoseStamped inputPose)
 //returns the state-action with the highest Q value except the previously executed command so that it doesn't undo it
 CommandStateActionQ PTAMLearner::getBestQStateAction(geometry_msgs::PoseStamped lastPose)
 {
-	cout<<"getBestQStateAction start"<<endl;
+	//cout<<"getBestQStateAction start"<<endl;
 	if(get<1>(lastBestQStateAction)!=get<1>(nullTuple) and get<2>(lastBestQStateAction)!=get<2>(nullTuple))
 		return lastBestQStateAction;
-	cout<<"lastBestQStateAction not null"<<endl;
+	//cout<<"lastBestQStateAction not null"<<endl;
 	vector<CommandStateActionQ> result;
 	int index=-1;
 	float maxQ = -numeric_limits<float>::infinity();  //init max Q to negative infinity
 	float Q;
-	cout<<"getting actions"<<endl;
+	//cout<<"getting actions"<<endl;
 	getActions();
-	cout<<"evaluating actions"<<endl;
+	//cout<<"evaluating actions"<<endl;
 	for(auto input : possibleTrajectories)
 	{
 		geometry_msgs::PoseStamped inp = get<0>(input);
@@ -118,7 +118,7 @@ CommandStateActionQ PTAMLearner::getBestQStateAction(geometry_msgs::PoseStamped 
 		cout<<"setting lastBestQStateAction"<<endl;
 		lastBestQStateAction = result[index];
 	}
-	cout<<"getBestQStateAction end"<<endl;
+	//cout<<"getBestQStateAction end"<<endl;
 	return lastBestQStateAction;
 }
 
@@ -159,9 +159,17 @@ CommandStateActionQ PTAMLearner::getThresholdedClosestAngleStateAction(float qTh
 	vector<CommandStateActionQ> potentialInputs;
 	getActions();
 
+	float fail_angle = numeric_limits<float>::infinity();
 	for(auto input : possibleTrajectories)
-		if(get<2>(input) > qThreshold)
-			potentialInputs.push_back(input);
+	{ 	if(get<2>(input) > qThreshold)
+				potentialInputs.push_back(input);
+			else
+			{
+				geometry_msgs::PoseStamped pose = get<0>(input);
+				if(fail_angle>Helper::Quat2RPY(pose.pose.orientation)[2])
+					fail_angle = Helper::Quat2RPY(pose.pose.orientation)[2];
+			}
+	}
 
 	if(potentialInputs.size()<1)
 		return getBestQStateAction(lastPose);
@@ -171,7 +179,8 @@ CommandStateActionQ PTAMLearner::getThresholdedClosestAngleStateAction(float qTh
 		CommandStateActionQ result = potentialInputs[rand()%potentialInputs.size()];
 		//need to change this to take the SLAM pose
 		//float currentAngle = Helper::Quat2RPY(robotWorldPose.orientation)[2],
-		float min_diff = numeric_limits<float>::infinity(), angle_diff;
+		float min_diff = numeric_limits<float>::infinity(), angle_diff, min_angle = 0 ;
+
 
 		for(auto input : potentialInputs)
 		{
@@ -181,10 +190,22 @@ CommandStateActionQ PTAMLearner::getThresholdedClosestAngleStateAction(float qTh
 			if(angle_diff<=min_diff)
 			{
 				min_diff = angle_diff;
+				min_angle = Helper::Quat2RPY(command.pose.orientation)[2];
 				result = input;
 			}
 		}
-		return result;
+		if(fail_angle < numeric_limits<float>::infinity())
+		{
+			if(fabs(min_angle-fail_angle)<0.05)
+			{
+				std::cout << "I have failed you" << '\n';
+				return getBestQStateAction(lastPose);
+			}
+			else
+				return result;
+		}
+		else
+			return result;
 	}
 }
 

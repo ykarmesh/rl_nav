@@ -3,7 +3,7 @@
   <model name="grey_wall">
     <static>true</static>
     <link name="link">
-      <pose>10 10 1.4 0 0 0</pose>
+      <pose>1.4 10 10 0 0 0</pose>
       <collision name="collision">
         <geometry>
           <box>
@@ -22,7 +22,7 @@
           <script>
             <uri>model://grey_wall/materials/scripts</uri>
             <uri>model://grey_wall/materials/textures</uri>
-            <name>vrc/grey_wall</name>
+            <name>vrc/grey_wall_design</name>
           </script>
         </material>
       </visual>

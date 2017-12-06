@@ -34,6 +34,10 @@
 #include <actionlib_msgs/GoalID.h>
 #include <actionlib/client/simple_action_client.h>
 
+#include <dynamic_reconfigure/DoubleParameter.h>
+#include <dynamic_reconfigure/Reconfigure.h>
+#include <dynamic_reconfigure/Config.h>
+
 using namespace std;
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
@@ -99,6 +103,7 @@ private:
 	visualization_msgs::Marker vslam_path, gazebo_path;
 	//geometry_msgs::Pose  waypointPose;
 	move_base_msgs::MoveBaseGoal recoverygoal;
+	ros::NodeHandle teb_nh_;
 
 	tf::TransformBroadcaster tfBroadcaster;
 
@@ -140,6 +145,11 @@ private:
 	//void waypointCb(const geometry_msgs::PoseStampedPtr waypointPosePtr);
 	void goalCb(const geometry_msgs::PoseStampedPtr goalPosePtr);
 
+
+        dynamic_reconfigure::ReconfigureRequest srv_req;
+        dynamic_reconfigure::ReconfigureResponse srv_resp;
+        dynamic_reconfigure::DoubleParameter double_param;
+        dynamic_reconfigure::Config conf;  
 public:
 	JoystickNode();
 	~JoystickNode();

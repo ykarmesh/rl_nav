@@ -14,6 +14,10 @@
 
 #include <tf/transform_datatypes.h>
 
+#include <dynamic_reconfigure/DoubleParameter.h>
+#include <dynamic_reconfigure/Reconfigure.h>
+#include <dynamic_reconfigure/Config.h>
+
 //#include <rl_nav/ExpectedPath.h>
 
 using namespace std;
@@ -76,7 +80,8 @@ JoystickNode::JoystickNode()
 		ROS_INFO("Waiting for the move_base action server to come up");
 
 
-
+  ros::NodeHandle teb_nh("/move_base/TebLocalPlannerROS");
+	teb_nh_ = teb_nh;
 	qFile.open(string("qData.txt"),ios::app);
 
 	joy_sub = nh.subscribe("/joy", 100, &JoystickNode::joyCb, this);
@@ -286,6 +291,22 @@ void JoystickNode::poseCb(const geometry_msgs::PoseStampedPtr posePtr)
 
 	if((actionClient->getState() == actionlib::SimpleClientGoalState::SUCCEEDED)&&(state == 1)&&(!MODE.compare("MAP")))
 	{
+		/*if(teb_nh_.hasParam("weight_kinematics_forward_drive"))
+		{
+			float a;
+			teb_nh_.getParam("weight_kinematics_forward_drive",a);
+			std::cout << " kinematic weight " << a;
+			teb_nh_.setParam("weight_kinematics_forward_drive",50);
+		}*/
+		double_param.name = "weight_kinematics_forward_drive";
+		double_param.value = 50.0 ;
+		conf.doubles.push_back(double_param);
+		srv_req.config = conf;
+		//std::cout << "service" << srv_req << '\n';
+		ros::service::call("/move_base/TebLocalPlannerROS", srv_req, srv_resp);
+		float a;
+		teb_nh_.getParam("weight_kinematics_forward_drive",a);
+		std::cout << srv_resp << "<-service response | kinematic weight " << a << std::endl;
 		state = 2;
 		goal_pub.publish(goalPose);
 	}
@@ -311,7 +332,11 @@ void JoystickNode::globalNextPoseCb(const nav_msgs::PathPtr pathPtr)
 	{
 		current_pose = pathPtr->poses[i].pose;
 		distance+= sqrt(pow((current_pose.position.x-prev_pose.position.x),2)+pow((current_pose.position.y-prev_pose.position.y),2));
-		if(distance>1)
+		if((distance>1)&&(state != 1))
+		{
+			break;
+		}
+		if((distance>0.5)&&(state == 1))
 		{
 			break;
 		}
@@ -558,7 +583,6 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 	pthread_mutex_unlock(&globalPlanner_mutex);
 	if(initialized)//will work only if SLAM is initialized
 	{
-		ros::NodeHandle teb_nh("/move_base/TebLocalPlannerROS");
 		geometry_msgs::PoseArray safe_poses, unsafe_poses;
 		float Q;
 		vector<int> RLInput; //last RL Input
@@ -601,14 +625,25 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 
 		recoverygoal.target_pose = lastPose;
 		learner.clear();
-		/*if(teb_nh.hasParam("allow_init_with_backwards_motion"))
+		double_param.name = "weight_kinematics_forward_drive";
+    double_param.value = 2.0 ;
+		conf.doubles.push_back(double_param);
+
+    srv_req.config = conf;
+    ros::service::call("TebLocalPlannerROS", srv_req, srv_resp);
+		std::cout << "service" << srv_req << '\n';
+		float a;
+		teb_nh_.getParam("weight_kinematics_forward_drive",a);
+		std::cout << srv_resp.config << " kinematic weight should be 1 " << a ;
+
+		/*if(teb_nh_.hasParam("weight_kinematics_forward_drive"))
 		{
-			teb_nh.setParam("allow_init_with_backwards_motion",true);
+			float a;
+			teb_nh_.getParam("weight_kinematics_forward_drive",a);
+			std::cout << " kinematic weight should be 50 " << a ;
+			teb_nh_.setParam("weight_kinematics_forward_drive",1);
 		}*/
 		actionClient->sendGoal(recoverygoal);
-		/*
-		teb_nh.setParam("allow_init_with_backwards_motion",false);
-		*/
 		if((!MODE.compare("MAP"))&&(state == 1))//if it's in MAP mode, continue along the global trajectory
 		{
 			pthread_mutex_unlock(&globalPlanner_mutex);
@@ -619,6 +654,20 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 			cout<<"succesful action"<<endl;*/
 		}
 		actionClient->waitForResult();
+		conf.doubles[0].value = 50.0 ;
+
+		srv_req.config = conf;
+		ros::service::call("/move_base/TebLocalPlannerROS", srv_req, srv_resp);
+		teb_nh_.getParam("weight_kinematics_forward_drive",a);
+		std::cout << " kinematic weight should be 50 " << a ;
+
+		/*if(teb_nh_.hasParam("weight_kinematics_forward_drive"))
+		{
+			float a;
+			teb_nh_.getParam("weight_kinematics_forward_drive",a);
+			std::cout << " kinematic weight should be 1 " << a;
+			teb_nh_.setParam("weight_kinematics_forward_drive",50);
+		}*/
 
 		if(actionClient->getState() == actionlib::SimpleClientGoalState::SUCCEEDED) //if the action succeeded
 		{
