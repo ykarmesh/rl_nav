@@ -1,5 +1,5 @@
 <launch>
-	<arg name="world_file"  default="$(find rl_nav)/launch/include/new_map1_large.world"/>
+	<arg name="world_file"  default="$(find rl_nav)/launch/include/house_small.world"/>
   	<arg name="base"      value="$(optenv TURTLEBOT_BASE kobuki)"/> <!-- create, roomba -->
   	<arg name="battery"   value="$(optenv TURTLEBOT_BATTERY /proc/acpi/battery/BAT0)"/>  <!-- /proc/acpi/battery/BAT0 --> 
   	<arg name="gui" default="true"/>
@@ -26,7 +26,7 @@
 		<!--map 1--> <!--rooms-->
 		<!--arg name="x" value="2"/>
 		<arg name="y" value="2"/>
-		<arg name="Y" value="1.0472"/ --> 
+		<arg name="Y" value="1.0472"/--> 
 
 		<!--new_map1-->
  		<!--arg name="x" value="-8"/>
@@ -34,14 +34,14 @@
 		<arg name="Y" value="-2.617"/--> 
 
 		<!--new_map2-->
- 		<arg name="x" value="-6"/>
+ 		<!--arg name="x" value="-6"/>
 		<arg name="y" value="-6"/>
-		<arg name="Y" value="1.0472"/> 
+		<arg name="Y" value="1.0472"/--> 
 
-		<!--House-->
- 		<!--arg name="x" value="5.0"/>
-		<arg name="y" value="-13.0"/>
-		<arg name="Y" value="2.61799"/--> 
+		<!--House_small-->
+ 		<arg name="x" value="-2.0"/>
+		<arg name="y" value="6.0"/>
+		<arg name="Y" value="4.1887"/> 
 
 		<!--map 2-->
 		<!--<arg name="x" value="1.22755896"/>
@@ -57,6 +57,16 @@
 		<!-- <arg name="x" value="-3.5"/>
 		<arg name="y" value="-3.5"/>
 		<arg name="Y" value="1.282365"/> -->
+
+		<!--special_corridor-->
+ 		<!--arg name="x" value="-2.0"/>
+		<arg name="y" value="-5.0"/>
+		<arg name="Y" value="2.6166"/--> 
+
+		<!--rrc_corridor-->
+ 		<!--arg name="x" value="7"/>
+		<arg name="y" value="-7"/>
+		<arg name="Y" value="2.6166"/--> 
 
 	</include>
 

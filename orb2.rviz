@@ -527,7 +527,7 @@ Visualization Manager:
       Marker Topic: /vslam_path
       Name: Marker
       Namespaces:
-        pointcloud_publisher: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -549,22 +549,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 28.7348
+      Distance: 6.89246
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 3.39387
-        Y: -3.48772
-        Z: 0.000883102
+        X: 0.0304954
+        Y: -0.00393677
+        Z: 1.00285
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.53659
+      Pitch: 1.5698
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.73233
+      Yaw: 3.57592
     Saved: ~
 Window Geometry:
   Displays:

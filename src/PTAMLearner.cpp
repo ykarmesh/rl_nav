@@ -95,18 +95,18 @@ CommandStateActionQ PTAMLearner::getBestQStateAction(geometry_msgs::PoseStamped 
 			index = result.size()-1;
 		}
 	}
-	cout<<"finished evaluating actions"<<endl;
+	//cout<<"finished evaluating actions"<<endl;
 	if(maxQ == -numeric_limits<float>::infinity() or !result.size())
 	{
-		cout<<"result size zero"<<endl;
+		//cout<<"result size zero"<<endl;
 		if(possibleTrajectories.size())
 		{
-			cout<<"returning random from possibleTrajectories of size "<<possibleTrajectories.size()<<endl;
+			//cout<<"returning random from possibleTrajectories of size "<<possibleTrajectories.size()<<endl;
 			lastBestQStateAction = possibleTrajectories[rand()%possibleTrajectories.size()];
 		}
 		else
 		{
-			cout<<"returning random"<<endl;
+			//cout<<"returning random"<<endl;
 			lastBestQStateAction = nullTuple;
 			return getRandomStateAction();
 		}
@@ -115,7 +115,7 @@ CommandStateActionQ PTAMLearner::getBestQStateAction(geometry_msgs::PoseStamped 
 
 	else if(index!=-1 and result.size())
 	{
-		cout<<"setting lastBestQStateAction"<<endl;
+		//cout<<"setting lastBestQStateAction"<<endl;
 		lastBestQStateAction = result[index];
 	}
 	//cout<<"getBestQStateAction end"<<endl;
@@ -135,7 +135,7 @@ CommandStateActionQ PTAMLearner::getEpsilonGreedyStateAction(float epsilon, geom
 CommandStateActionQ PTAMLearner::getRandomStateAction()
 {
 	vector<geometry_msgs::PoseStamped > trajectories = Helper::getPoses();
-	cout<<trajectories.size()<<endl;
+	//cout<<trajectories.size()<<endl;
 	return getAction(trajectories[rand()%trajectories.size()]);
 }
 

@@ -92,7 +92,7 @@ JoystickNode::JoystickNode()
 	ptamInfo_sub = nh.subscribe("/vslam/info", 100, &JoystickNode::ptamInfoCb, this);
 	ptamStart_sub = nh.subscribe("/vslam/started", 100, &JoystickNode::ptamStartedCb, this);
 	//plannerStatus_sub = nh.subscribe("/planner/status", 100, &JoystickNode::plannerStatusCb, this);
-	local_plan_sub = nh.subscribe("/move_base/TebLocalPlannerROS/local_plan", 100, &JoystickNode::globalNextPoseCb, this);
+	local_plan_sub = nh.subscribe("/move_base/TebLocalPlannerROS/teb_feedback", 100, &JoystickNode::globalNextPoseCb, this);
 	//globalPoints_sub = nh.subscribe("/planner/global/path", 100, &JoystickNode::globalNextPoseCb, this);
 	gazeboModelStates_sub = nh.subscribe("/gazebo/model_states", 100, &JoystickNode::gazeboModelStatesCb, this);
 	//waypoint_sub = nh.subscribe("/move_base_simple/waypoint",100,&JoystickNode::waypointCb,this);
@@ -100,7 +100,7 @@ JoystickNode::JoystickNode()
 
 	vslam_path.id=0;
 	vslam_path.lifetime=ros::Duration(1);
-	vslam_path.header.frame_id = "/world";
+	vslam_path.header.frame_id = "/odom";
 	vslam_path.header.stamp = ros::Time::now();
 	vslam_path.ns = "pointcloud_publisher";
 	vslam_path.action = visualization_msgs::Marker::ADD;
@@ -270,7 +270,7 @@ void JoystickNode::poseCb(const geometry_msgs::PoseStampedPtr posePtr)
 	else if(num_broken>0)
 		num_broken--;
 
-	geometry_msgs::PoseStamped ps = pose;
+	geometry_msgs::PoseStamped ps = pose, ps_odom;
 
 	//The default pose points 90 deg away from the actual pose to the right
 	//This corrects that to point in the camera direction
@@ -281,23 +281,29 @@ void JoystickNode::poseCb(const geometry_msgs::PoseStampedPtr posePtr)
 		ps.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(curr_angles[0], -PI/2.0 + curr_angles[1], curr_angles[2]);
 	pose_pub.publish(ps);
 
-
-	//vslam_path.points.push_back(pose.pose.position);
-	vslam_path.points.push_back(ps.pose.position);
+	tf::StampedTransform tfwo;
+	tf::Pose tf_ps, tf_ps_odom;
+	tf::poseMsgToTF(ps.pose, tf_ps);
+	listener->lookupTransform("/odom","world", ros::Time(), tfwo);
+	tf_ps_odom = tfwo*tf_ps;
+	tf::poseTFToMsg(tf_ps_odom, ps_odom.pose);
+	vslam_path.points.push_back(ps_odom.pose.position);
 	ptam_path_pub.publish(vslam_path);
 
 	gazebo_path.points.push_back(robotWorldPose.position);
 	gazebo_path_pub.publish(gazebo_path);
 
-	if((actionClient->getState() == actionlib::SimpleClientGoalState::SUCCEEDED)&&(state == 1)&&(!MODE.compare("MAP")))
+	if((state == 1)&&(!MODE.compare("MAP")))
 	{
+		if((actionClient->getState() == actionlib::SimpleClientGoalState::SUCCEEDED))
+		{
 		/*if(teb_nh_.hasParam("weight_kinematics_forward_drive"))
 		{
 			float a;
 			teb_nh_.getParam("weight_kinematics_forward_drive",a);
 			std::cout << " kinematic weight " << a;
 			teb_nh_.setParam("weight_kinematics_forward_drive",50);
-		}*/
+		}
 		double_param.name = "weight_kinematics_forward_drive";
 		double_param.value = 50.0 ;
 		conf.doubles.push_back(double_param);
@@ -306,9 +312,10 @@ void JoystickNode::poseCb(const geometry_msgs::PoseStampedPtr posePtr)
 		ros::service::call("/move_base/TebLocalPlannerROS", srv_req, srv_resp);
 		float a;
 		teb_nh_.getParam("weight_kinematics_forward_drive",a);
-		std::cout << srv_resp << "<-service response | kinematic weight " << a << std::endl;
+		std::cout << srv_resp << "<-service response | kinematic weight " << a << std::endl;*/
 		state = 2;
 		goal_pub.publish(goalPose);
+		}
 	}
 
 	pthread_mutex_unlock(&pose_mutex);
@@ -317,29 +324,40 @@ void JoystickNode::poseCb(const geometry_msgs::PoseStampedPtr posePtr)
 /**
  *	Receive next expected robot pose w.r.t. current pose along global path
  */
-void JoystickNode::globalNextPoseCb(const nav_msgs::PathPtr pathPtr)
+void JoystickNode::globalNextPoseCb(const teb_local_planner::FeedbackMsg traj)
 {
 	pthread_mutex_lock(&globalPlanner_mutex);
 	geometry_msgs::Pose current_pose, prev_pose;
+	geometry_msgs::Twist current_vel, prev_vel;
 	tf::Pose To1, To2, T12;
 	tf::StampedTransform transformbc;
 
 	float distance = 0;
-	prev_pose.position.x = pathPtr->poses[0].pose.position.x;
-	prev_pose.position.y = pathPtr->poses[0].pose.position.y;
-	tf::poseMsgToTF(pathPtr->poses[0].pose, To1);
-	for(int i=1; i < pathPtr->poses.size(); i++)
+	bool dir_change = false;
+	prev_pose = traj.trajectories[traj.selected_trajectory_idx].trajectory[0].pose;
+	prev_vel = traj.trajectories[traj.selected_trajectory_idx].trajectory[0].velocity;
+	tf::poseMsgToTF(prev_pose, To1);
+	for(int i=1; i < traj.trajectories[traj.selected_trajectory_idx].trajectory.size(); i++)
 	{
-		current_pose = pathPtr->poses[i].pose;
+		current_pose = traj.trajectories[traj.selected_trajectory_idx].trajectory[i].pose;
+		current_vel = traj.trajectories[traj.selected_trajectory_idx].trajectory[i].velocity;
 		distance+= sqrt(pow((current_pose.position.x-prev_pose.position.x),2)+pow((current_pose.position.y-prev_pose.position.y),2));
-		if((distance>1)&&(state != 1))
+		if(((prev_vel.linear.x<=0)&&(current_vel.linear.x<=0))||((prev_vel.linear.x>=0)&&(current_vel.linear.x>=0)))
+			dir_change = false;
+		else
+			dir_change = true;
+		if(state != 1)
 		{
-			break;
+			if(dir_change ==  true)
+			{
+				cout<<"direction changed";
+				break;
+			}
+			else if(distance>1)
+				break;
 		}
-		if((distance>0.5)&&(state == 1))
-		{
+		if((distance>0.33)&&(state == 1))
 			break;
-		}
 		prev_pose = current_pose;
 	}
 	expected_pose.header.stamp = ros::Time::now();
@@ -625,16 +643,17 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 
 		recoverygoal.target_pose = lastPose;
 		learner.clear();
-		double_param.name = "weight_kinematics_forward_drive";
+		/*double_param.name = "weight_kinematics_forward_drive";
     double_param.value = 2.0 ;
 		conf.doubles.push_back(double_param);
 
     srv_req.config = conf;
-    ros::service::call("TebLocalPlannerROS", srv_req, srv_resp);
+    ros::service::call("move_base/TebLocalPlannerROS", srv_req, srv_resp);
 		std::cout << "service" << srv_req << '\n';
 		float a;
-		teb_nh_.getParam("weight_kinematics_forward_drive",a);
-		std::cout << srv_resp.config << " kinematic weight should be 1 " << a ;
+		//ros::param::set("/move_base/TebLocalPlannerROS/weight_kinematics_forward_drive",a);
+		ros::param::get("/move_base/TebLocalPlannerROS/weight_kinematics_forward_drive",a);
+		std::cout << srv_resp.config << " kinematic weight should be 2 " << a ;*/
 
 		/*if(teb_nh_.hasParam("weight_kinematics_forward_drive"))
 		{
@@ -654,12 +673,12 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 			cout<<"succesful action"<<endl;*/
 		}
 		actionClient->waitForResult();
-		conf.doubles[0].value = 50.0 ;
+		/*conf.doubles[0].value = 50.0 ;
 
 		srv_req.config = conf;
 		ros::service::call("/move_base/TebLocalPlannerROS", srv_req, srv_resp);
 		teb_nh_.getParam("weight_kinematics_forward_drive",a);
-		std::cout << " kinematic weight should be 50 " << a ;
+		std::cout << " kinematic weight should be 50 " << a ;*/
 
 		/*if(teb_nh_.hasParam("weight_kinematics_forward_drive"))
 		{

@@ -1,0 +1,6 @@
+RRTPlan:
+  max_footprint_cost: 100
+  Inscribed_radius: 0.30
+  Circumscribed_radius: 0.35
+  max_dist_bw_poses: 0.025
+  intermediate_poses: true

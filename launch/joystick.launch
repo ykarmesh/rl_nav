@@ -19,14 +19,15 @@
 		<remap from="/camera/camera_info" to="/camera/rgb/camera_info" />
 		<!-- orb slam -->
 		<param name="init_angle" type="double" value="0" />
-		<param name="robot_radius" type="double" value="0.25" />	
+		<param name="robot_radius" type="double" value="0.35" />	
 		
 		<!-- ptam -->
-		<!-- <param name="init_angle" type="double" value="3.14" />	 -->
+		<!-- <param name="init_angle" type="double" value="3.14" /> -->
 		
 		<param name="qThresh" type="double" value="-7" />	
 		<param name="vel_scale" type="double" value="1" />	
 		<param name="MAX_POINT_OVERLAP" type="int" value="150"/>
+
 		<!-- map 1 -->
 	        <!-- <param name="mode" type="string" value="MAP" />	
 		<param name="init_x" type="double" value="2.0" />
@@ -57,11 +58,11 @@
 		<param name="init_y" type="double" value="1" />
 		<param name="init_Y" type="double" value="0.4" /--> 
 	
-		<!-- New Map1 -->
+		<!-- New Map1
 		<param name="mode" type="string" value="MAP" />
 		<param name="init_x" type="double" value="-8" />
 		<param name="init_y" type="double" value="-8" />
-		<param name="init_Y" type="double" value="2.617" />
+		<param name="init_Y" type="double" value="2.617" /> -->
 
 		<!-- New Map2 -->
 		<param name="mode" type="string" value="MAP" />
@@ -80,7 +81,6 @@
 		<param name="init_x" type="double" value="2.0" />
 		<param name="init_y" type="double" value="2.0" />
 		<param name="init_Y" type="double" value="1.0472" /> -->
-		<!-- <remap from="/cmd_vel_mux/input/teleop" to="/cmd_vel" /> -->
 
 	</node>
 	

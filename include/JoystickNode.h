@@ -18,6 +18,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <sensor_msgs/Joy.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <teb_local_planner/FeedbackMsg.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/Float32MultiArray.h>
@@ -138,7 +139,7 @@ private:
 	void ptamInfoCb(const std_msgs::BoolPtr ptamInfoPtr);
 	//void plannerStatusCb(const std_msgs::StringPtr plannerStatusPtr);
 	void gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelStatesPtr);
-	void globalNextPoseCb(const nav_msgs::PathPtr pathPtr);
+	void globalNextPoseCb(const teb_local_planner::FeedbackMsg traj);
 	void initCb(const std_msgs::Empty empty);
 	void sendCommandCb(const std_msgs::Empty empty);
 	void ptamStartedCb(const std_msgs::EmptyPtr emptyPtr);
