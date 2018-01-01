@@ -47,7 +47,7 @@ class irlAgent:
 
 		rospack = rospkg.RosPack()
 		self.rl_nav = rospack.get_path('rl_nav')
-		self.ptam_path = rospack.get_path('ptam')
+		self.vslam_path = rospack.get_path('ORB_SLAM2')
 
 		self.GAMMA = 0.9
 		self.ALPHA = 0.5
@@ -67,7 +67,7 @@ class irlAgent:
 		# temp.append(stateAction[3]/19.0) #common points
 		# temp.append(stateAction[-3]) #initial covariance
 		# temp.append(stateAction[-2]) #final covariance
-		# temp.append(stateAction[-1]) # ptam breakage
+		# temp.append(stateAction[-1]) # vslam breakage
 		# #temp = temp + stateAction[-3:] 
 		return tuple(temp)
 	
@@ -159,13 +159,13 @@ class irlAgent:
 		
 		print 'TESTING ON GAZEBO' #test/run on Gazebo to get the feature expectations
 		self.roslauncher([self.rl_nav+'/launch/turtlebot_gazebo.launch', 
-			 			  self.ptam_path+'/launch/ptam.launch', 
+			 			  self.vslam_path+'/launch/orb_monocular.launch', 
 			 			  self.rl_nav+'/launch/test.launch'])
 		
 		while not isfile(self.ros_path + 'feFile.txt'):
 			print 'TESTING ON GAZEBO' #test/run on Gazebo to get the feature expectations
 			self.roslauncher([self.rl_nav+'/launch/turtlebot_gazebo.launch', 
-				 			  self.ptam_path+'/launch/ptam.launch', 
+				 			  self.vslam_path+'/launch/orb_monocular.launch', 
 			 				  self.rl_nav+'/launch/test.launch'])
 
 		feFile = open(self.ros_path +'feFile.txt', 'r')
@@ -283,5 +283,6 @@ if __name__ == '__main__':
 	# print (irlearner.QTrainer([0.264772755303, 0.414378964561, -0.331198312114, 0.480262962065, 0.637158522516, 0.0729012788753, -0.0754613025673]))
 
 	#print irlearner.optimalWeightFinder()
-	irlearner.QTrainer([0.35010781, 0.46186009, -0.21819772, 0.42189656, 0.56911922, 0.06891261, 0.31893225, -0.09021865])
+	#irlearner.QTrainer([0.35010781, 0.46186009, -0.21819772, 0.42189656, 0.56911922, 0.06891261, 0.31893225, -0.09021865])
+        irlearner.QTrainer([0.35010781, 0 , 0 , -0.09021865])
 

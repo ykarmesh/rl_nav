@@ -7,14 +7,14 @@ using namespace std;
 
 pthread_mutex_t Helper::pose_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t Helper::info_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t Helper::gazeboModelState_mutex = PTHREAD_MUTEX_INITIALIZER;
+//pthread_mutex_t Helper::gazeboModelState_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t Helper::pointCloud_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t Helper::costmap_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 geometry_msgs::PoseStamped Helper::pose;
 sensor_msgs::CameraInfo Helper::cam_info;
 std_msgs::Bool Helper::ptamInfo;
-geometry_msgs::Pose Helper::robotWorldPose;
+//geometry_msgs::Pose Helper::robotWorldPose;
 sensor_msgs::PointCloud2 Helper::currentPointCloud;
 ros::ServiceClient Helper::posePointCloudClient;
 bool Helper::up, Helper::down, Helper::left, Helper::right;
@@ -26,10 +26,10 @@ Helper::Helper()
 {
 	listener = new(tf::TransformListener);
 	posePointCloudClient = nh.serviceClient<ORB_SLAM2::PosePointCloud>("/ORB_SLAM2/posepointcloud");
-	pose_sub = nh.subscribe("/vslam/pose_world",100, &Helper::poseCb, this);
+	pose_sub = nh.subscribe("/vslam/pose_world",500, &Helper::poseCb, this);
 	info_sub = nh.subscribe("/vslam/info",100, &Helper::ptamInfoCb, this);
 	pointCloud_sub = nh.subscribe("/vslam/frame_points", 100, &Helper::pointCloudCb, this);
-	gazeboModelStates_sub = nh.subscribe("/gazebo/model_states", 100, &Helper::gazeboModelStatesCb, this);
+	//gazeboModelStates_sub = nh.subscribe("/gazebo/model_states", 100, &Helper::gazeboModelStatesCb, this);
 	OccupancyGrid_sub = nh.subscribe("/move_base/global_costmap/costmap", 1, &Helper::OccupancyGridCb, this);
 	cameraInfo_sub = nh.subscribe("/camera/camera_info", 1, &Helper::cameraInfoCb, this);
 	nh.param("robot_radius", robot_radius, 0.2);
@@ -52,14 +52,14 @@ void Helper::ptamInfoCb(const std_msgs::BoolPtr ptamInfoPtr)
 	ptamInfo = *ptamInfoPtr;
 	pthread_mutex_unlock(&info_mutex);
 }
-
+/*
 void Helper::gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelStatesPtr)
 {
 	pthread_mutex_lock(&gazeboModelState_mutex);
 	robotWorldPose = modelStatesPtr->pose.back();
 	pthread_mutex_unlock(&gazeboModelState_mutex);
 }
-
+*/
 void Helper::pointCloudCb(const sensor_msgs::PointCloud2::ConstPtr pointCloudPtr)
 {
 	pthread_mutex_lock(&pointCloud_mutex);
@@ -312,12 +312,13 @@ vector<geometry_msgs::PoseStamped > Helper::getPoses()
 	}
 	pthread_mutex_lock(&pose_mutex);
 	tf::poseMsgToTF(pose.pose, Twc);
+	pthread_mutex_unlock(&pose_mutex);
 	Toc = Tow * Twc;
 	tf::poseTFToMsg(Toc, pose_odom.pose);
 	pose_odom.header.stamp = pose.header.stamp;
 	pose_odom.header.frame_id = "/odom";
 	double orientation = Quat2RPY(pose_odom.pose.orientation)[2] + 1.57; //converting camera to base_link in orientation
-	pthread_mutex_unlock(&pose_mutex);
+
 
 	for(float i=-num_angles*angle ; i<=num_angles*angle ; i+=angle)
 	{

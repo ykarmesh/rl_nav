@@ -38,33 +38,33 @@
 
 		
 		<!-- map 2 -->
-		<!--<param name="mode" type="string" value="MAP" />
+		<!-- param name="mode" type="string" value="MAP" />
 		<param name="init_x" type="double" value="1.22755896" />
 		<param name="init_y" type="double" value="1.76695301" />
-		<param name="init_Y" type="double" value="1.282365" /> -->
+		<param name="init_Y" type="double" value="1.282365" / --> 
 
 		<!-- map 3 -->
-		<param name="mode" type="string" value="MAP" />
+		<!--<param name="mode" type="string" value="MAP" />
 		<param name="init_x" type="double" value="2" />
 		<param name="init_y" type="double" value="2" />
-		<param name="init_Y" type="double" value="0" />
+		<param name="init_Y" type="double" value="0" />-->
 
 		<!-- corridor map -->
-		<!--<param name="mode" type="string" value="MAP" />
-		<param name="init_x" type="double" value="-3" />
+		<param name="mode" type="string" value="MAP" />
+		<!--<param name="init_x" type="double" value="-3" />
 		<param name="init_y" type="double" value="-1.81" />
-		<param name="init_Y" type="double" value="1.282365" />-->	
+		<param name="init_Y" type="double" value="1.282365" />-->
 
 		<!-- training map -->
-		<!-- <param name="init_x" type="double" value="-1" />
+		<param name="init_x" type="double" value="-1" />
 		<param name="init_y" type="double" value="1" />
-		<param name="init_Y" type="double" value="0.4" /> -->
+		<param name="init_Y" type="double" value="0.4" /> 
 
 		 <!-- rooms map -->
-		<param name="mode" type="string" value="MAP" />	
+		<!-- param name="mode" type="string" value="MAP" />	
 		<param name="init_x" type="double" value="2.0" />
 		<param name="init_y" type="double" value="2.0" />
-		<param name="init_Y" type="double" value="1.0472" /> 
+		<param name="init_Y" type="double" value="1.0472" /> -->
 		<!-- <remap from="/cmd_vel_mux/input/teleop" to="/cmd_vel" /> -->
 
 	</node>

@@ -14,14 +14,14 @@
 
 #include <tf/transform_datatypes.h>
 
-#include <rl_nav/ExpectedPath.h>
+//#include <rl_nav/ExpectedPath.h>
 
 using namespace std;
 
 pthread_mutex_t JoystickNode::pose_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t JoystickNode::pointCloud_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t JoystickNode::ptamInfo_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t JoystickNode::plannerStatus_mutex = PTHREAD_MUTEX_INITIALIZER;
+//pthread_mutex_t JoystickNode::plannerStatus_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t JoystickNode::gazeboModelState_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t JoystickNode::globalPlanner_mutex = PTHREAD_MUTEX_INITIALIZER;
 //tf::TransformBroadcaster JoystickNode::tfBroadcaster;
@@ -47,7 +47,7 @@ JoystickNode::JoystickNode()
 	unsafe_poses_pub = nh.advertise<geometry_msgs::PoseArray>("/rl/unsafe_poses",1);
 	odom_reset_pub = nh.advertise<std_msgs::Empty>("/mobile_base/commands/reset_odometry",1);
 
-	expectedPathClient = nh.serviceClient<rl_nav::ExpectedPath>("/planner/global/expected_path");
+	//expectedPathClient = nh.serviceClient<rl_nav::ExpectedPath>("/planner/global/expected_path");
 	num=0;
 	ifstream ratioFile("ratioFile.txt");
 	ratioFile >> rlRatio >> num_episodes;
@@ -82,11 +82,11 @@ JoystickNode::JoystickNode()
 	joy_sub = nh.subscribe("/joy", 100, &JoystickNode::joyCb, this);
 	init_sub = nh.subscribe("/rl/init", 100, &JoystickNode::initCb, this);
 	sendCommand_sub = nh.subscribe("/rl/sendCommand", 100, &JoystickNode::sendCommandCb, this);
-	pose_sub = nh.subscribe("/vslam/pose_world",100, &JoystickNode::poseCb, this);
+	pose_sub = nh.subscribe("/vslam/pose_world",500, &JoystickNode::poseCb, this);
 	//pointCloud_sub = nh.subscribe("/vslam/pc2", 100, &JoystickNode::pointCloudCb, this);
 	ptamInfo_sub = nh.subscribe("/vslam/info", 100, &JoystickNode::ptamInfoCb, this);
 	ptamStart_sub = nh.subscribe("/vslam/started", 100, &JoystickNode::ptamStartedCb, this);
-	plannerStatus_sub = nh.subscribe("/planner/status", 100, &JoystickNode::plannerStatusCb, this);
+	//plannerStatus_sub = nh.subscribe("/planner/status", 100, &JoystickNode::plannerStatusCb, this);
 	local_plan_sub = nh.subscribe("/move_base/TebLocalPlannerROS/local_plan", 100, &JoystickNode::globalNextPoseCb, this);
 	//globalPoints_sub = nh.subscribe("/planner/global/path", 100, &JoystickNode::globalNextPoseCb, this);
 	gazeboModelStates_sub = nh.subscribe("/gazebo/model_states", 100, &JoystickNode::gazeboModelStatesCb, this);
@@ -95,7 +95,7 @@ JoystickNode::JoystickNode()
 
 	vslam_path.id=0;
 	vslam_path.lifetime=ros::Duration(1);
-	vslam_path.header.frame_id = "/world";
+	vslam_path.header.frame_id = "/odom";
 	vslam_path.header.stamp = ros::Time::now();
 	vslam_path.ns = "pointcloud_publisher";
 	vslam_path.action = visualization_msgs::Marker::ADD;
@@ -151,7 +151,6 @@ JoystickNode::JoystickNode()
 JoystickNode::~JoystickNode()
 {
 	qFile.close();
-	//cout<<"Quitting JoystickNode"<<endl;
 	ros::NodeHandle p_nh("~");
 	p_nh.deleteParam("qThresh");
 	p_nh.deleteParam("mode");
@@ -224,7 +223,7 @@ void JoystickNode::initCb(const std_msgs::Empty empty)
 }
 
 /**
- *	Receive PTAM pose of camera in world
+ *	Receive pose of camera from SLAM
  */
 void JoystickNode::poseCb(const geometry_msgs::PoseStampedPtr posePtr)
 {
@@ -266,7 +265,7 @@ void JoystickNode::poseCb(const geometry_msgs::PoseStampedPtr posePtr)
 	else if(num_broken>0)
 		num_broken--;
 
-	geometry_msgs::PoseStamped ps = pose;
+	geometry_msgs::PoseStamped ps = pose, ps_odom;
 
 	//The default pose points 90 deg away from the actual pose to the right
 	//This corrects that to point in the camera direction
@@ -277,13 +276,19 @@ void JoystickNode::poseCb(const geometry_msgs::PoseStampedPtr posePtr)
 		ps.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(curr_angles[0], -PI/2.0 + curr_angles[1], curr_angles[2]);
 	pose_pub.publish(ps);
 
-
-	//vslam_path.points.push_back(pose.pose.position);
-	vslam_path.points.push_back(ps.pose.position);
+	
+	tf::transformPose("/odom",ps,ps_odom);
+	vslam_path.points.push_back(ps_odom.pose.position);
 	ptam_path_pub.publish(vslam_path);
 
 	gazebo_path.points.push_back(robotWorldPose.position);
 	gazebo_path_pub.publish(gazebo_path);
+
+	if((actionClient->getState() == actionlib::SimpleClientGoalState::SUCCEEDED)&&(state == 1)&&(!MODE.compare("MAP")))
+	{
+		state = 2;
+		goal_pub.publish(goalPose);
+	}
 
 	pthread_mutex_unlock(&pose_mutex);
 }
@@ -337,9 +342,7 @@ void JoystickNode::globalNextPoseCb(const nav_msgs::PathPtr pathPtr)
 
 	float Q;
 	vector<int> stateAction;
-	//pcl::PointCloud<pcl::PointXYZ> nextPointCloud = Helper::getPCLPointCloudAtPosition(expected_pose);
 	tie(ignore, stateAction, Q) = learner.getAction(expected_pose); //convert the subsequent part of the trajectory into a RL state-action pair
-	//ptam_com::ptam_info info;
 	std_msgs::Bool info;
 
 	pthread_mutex_lock(&ptamInfo_mutex);
@@ -360,6 +363,7 @@ void JoystickNode::globalNextPoseCb(const nav_msgs::PathPtr pathPtr)
 		for(auto i: stateAction)
 			cout<<i<<'\t';
 		cout<<Q<<endl;
+		pthread_mutex_unlock(&globalPlanner_mutex);
 	}
 	//else if(!MODE.compare("MAP") and learner.predict(stateAction))
 	else if(!MODE.compare("MAP") and Q < Q_THRESH) //if a failure is predicted
@@ -372,11 +376,12 @@ void JoystickNode::globalNextPoseCb(const nav_msgs::PathPtr pathPtr)
 		planner_reset_pub.publish(actionlib_msgs::GoalID());//stop planner
 		planner_reset_pub.publish(actionlib_msgs::GoalID());//stop planner
 		learner.clear();
+		pthread_mutex_unlock(&globalPlanner_mutex);
+		ros::Duration(0.5).sleep();
 		sendCommandCb(std_msgs::Empty());
 	}
-	/*else cout<<"Q VALUE: "<<Q<<endl;*/
-
-	pthread_mutex_unlock(&globalPlanner_mutex);
+	else //cout<<"Q VALUE: "<<Q<<endl;*/
+		pthread_mutex_unlock(&globalPlanner_mutex);
 }
 
 /**
@@ -523,7 +528,7 @@ void JoystickNode::gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelSt
 
 /**
  *	Receive Planner status after executing local action (recovery action)
- */
+
 void JoystickNode::plannerStatusCb(const std_msgs::StringPtr plannerStatusPtr)
 {
 	pthread_mutex_lock(&plannerStatus_mutex);
@@ -535,7 +540,7 @@ void JoystickNode::plannerStatusCb(const std_msgs::StringPtr plannerStatusPtr)
 
 	pthread_mutex_unlock(&plannerStatus_mutex);
 
-}
+}*/
 /**
  * Receiving the Goal Pose from rviz
  */
@@ -550,6 +555,7 @@ void JoystickNode::goalCb(const geometry_msgs::PoseStampedPtr goalPosePtr)
  */
 void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 {
+	pthread_mutex_unlock(&globalPlanner_mutex);
 	if(initialized)//will work only if SLAM is initialized
 	{
 		ros::NodeHandle teb_nh("/move_base/TebLocalPlannerROS");
@@ -581,31 +587,7 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 			tie(lastPose, RLInput, prevQ) = learner.getEpsilonGreedyStateAction(95,lastPose);
 		else if(!MODE.compare("MAP"))
 		{
-/*			rl_nav::ExpectedPath expectedPath;
-			expectedPathClient.call(expectedPath);
-			vector<float> poses = expectedPath.response.expectedPath.data;
-			float nextAngle = atan(poses[5]);
-*/			//float nextAngle = atan2 (waypointPose.position.y + pose.pose.position.x, waypointPose.position.x + pose.pose.position.z);
-			//float nextAngle = atan2 (waypointPose.position.y + robotWorldPose.position.x, waypointPose.position.x + robotWorldPose.position.z);
-			/*geometry_msgs::Pose prev_pose;
-			tf::Pose To1, To2, T12;
-			tf::poseMsgToTF(expected_pose.pose, Tbe);
-			tf::poseMsgToTF(pose.pose, Twc);
-			T12 = To1.inverse()*To2;
-			tf::poseTFToMsg(T12, expected_pose.pose);*/
-			/*geometry_msgs::PoseStamped expected_pose_w2D;
-			try
-			{
-				listener->waitForTransform("/world2D", "/base_link", ros::Time(0), ros::Duration(0.1));
-				listener->transformPose("/world2D", expected_pose, expected_pose_w2D);
-			}
-			catch (tf::TransformException &ex)
-			{
-				ROS_ERROR("%s",ex.what());
-				return;
-			}*/
 			float nextAngle = Helper::Quat2RPY(expected_pose.pose.orientation)[2];
-
 			tie(lastPose, RLInput, prevQ) = learner.getThresholdedClosestAngleStateAction(Q_THRESH, nextAngle, lastPose);
 			//tie(lastPose, RLInput, prevQ) = learner.getSLClosestAngleStateAction(nextAngle);
 		}
@@ -616,17 +598,26 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 		next_pc_pub.publish(Helper::getPointCloud2AtPosition(lastPose));
 
 		//send the next trajectory to the planner
-		move_base_msgs::MoveBaseGoal goal;
-		goal.target_pose = lastPose;
+
+		recoverygoal.target_pose = lastPose;
 		learner.clear();
 		/*if(teb_nh.hasParam("allow_init_with_backwards_motion"))
 		{
 			teb_nh.setParam("allow_init_with_backwards_motion",true);
 		}*/
-		actionClient->sendGoal(goal);
-
-		//teb_nh.setParam("allow_init_with_backwards_motion",false);
-
+		actionClient->sendGoal(recoverygoal);
+		/*
+		teb_nh.setParam("allow_init_with_backwards_motion",false);
+		*/
+		if((!MODE.compare("MAP"))&&(state == 1))//if it's in MAP mode, continue along the global trajectory
+		{
+			pthread_mutex_unlock(&globalPlanner_mutex);
+			return;
+			/*state = 2;
+			breakCount = 0;
+			goal_pub.publish(goalPose);
+			cout<<"succesful action"<<endl;*/
+		}
 		actionClient->waitForResult();
 
 		if(actionClient->getState() == actionlib::SimpleClientGoalState::SUCCEEDED) //if the action succeeded
@@ -697,36 +688,49 @@ void JoystickNode::sendCommandCb(std_msgs::Empty empty)
 						ros::shutdown();
 					}
 				}
-				if(!MODE.compare("MAP"))//if SLAM breaks in MAP mode, stop the planner
+				/*if(!MODE.compare("MAP"))//if SLAM breaks in MAP mode, stop the planner
 					planner_reset_pub.publish(actionlib_msgs::GoalID());//stop planner
-				else //else reinitialize and start again
+				else //else reinitialize and start again*/
 					initCb(std_msgs::Empty());
 
 			}
 			else if(state==1) //if SLAM is not broken and it was in recovery action state
 			{
-				if(!MODE.compare("MAP"))//if it's in MAP mode, continue along the global trajectory
+				/*if(!MODE.compare("MAP"))//if it's in MAP mode, continue along the global trajectory
 				{
 					state = 2;
 					breakCount = 0;
 					goal_pub.publish(goalPose);
+					cout<<"succesful action"<<endl;
 				}
-				else //if it's in TRAIN or TEST modes, execute the next step (recovery action)
+				else //if it's in TRAIN or TEST modes, execute the next step (recovery action)*/
 					sendCommandCb(std_msgs::Empty());
 
 			}
 		}
 		else //if the action was unsuccessful, try again
 		{
-			std_msgs::Bool info;
-			pthread_mutex_lock(&ptamInfo_mutex);
-			info = ptamInfo;
-			pthread_mutex_unlock(&ptamInfo_mutex);
-			if(info.data =! true)
-			{	planner_reset_pub.publish(actionlib_msgs::GoalID());
-				cout<<" Slam broke during recovery behaviour "<<endl;
-			}
-			sendCommandCb(std_msgs::Empty());
+			//if(MODE.compare("MAP"))
+				sendCommandCb(std_msgs::Empty());
+			/*else
+			{
+				std_msgs::Bool info;
+				pthread_mutex_lock(&ptamInfo_mutex);
+				info = ptamInfo;
+				pthread_mutex_unlock(&ptamInfo_mutex);
+				if(info.data =! true)
+				{	planner_reset_pub.publish(actionlib_msgs::GoalID());
+					cout<<" Slam broke during recovery behaviour "<<endl;
+				}
+				else
+				{	//sendCommandCb(std_msgs::Empty());
+					cout<<"unsuccessful action"<<endl;
+					state = 2;
+					breakCount = 0;
+					goal_pub.publish(goalPose);
+				}
+			}*/
 		}
 	}
+	pthread_mutex_unlock(&globalPlanner_mutex);
 }

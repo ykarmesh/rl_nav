@@ -51,17 +51,15 @@ private:
 					pose_sub,
 					pointCloud_sub,
 					ptamInfo_sub,
-					plannerStatus_sub,
 					gazeboModelStates_sub,
 					local_plan_sub,
 					init_sub,
 					sendCommand_sub,
 					ptamStart_sub,
-					goal_sub; //waypoint_sub,
+					goal_sub; //waypoint_sub,plannerStatus_sub,
 
 	// Publishers
 	ros::Publisher  vel_pub,
-					planner_pub,
 					planner_reset_pub,
 					gazebo_state_reset_pub,
 					ptam_com_pub,
@@ -78,15 +76,15 @@ private:
 					gazebo_pose_pub,
 					ptam_pc_pub,
 					odom_reset_pub,
-					goal_pub;
+					goal_pub; //planner_pub,
 
-	ros::ServiceClient expectedPathClient;
+	//ros::ServiceClient expectedPathClient;
 
 	//Mutex locks
 	static pthread_mutex_t pose_mutex;
 	static pthread_mutex_t pointCloud_mutex;
 	static pthread_mutex_t ptamInfo_mutex;
-	static pthread_mutex_t plannerStatus_mutex;
+	//static pthread_mutex_t plannerStatus_mutex;
 	static pthread_mutex_t gazeboModelState_mutex;
 	static pthread_mutex_t globalPlanner_mutex;
 
@@ -100,6 +98,7 @@ private:
 	geometry_msgs::Pose robotWorldPose;
 	visualization_msgs::Marker vslam_path, gazebo_path;
 	//geometry_msgs::Pose  waypointPose;
+	move_base_msgs::MoveBaseGoal recoverygoal;
 
 	tf::TransformBroadcaster tfBroadcaster;
 
@@ -132,7 +131,7 @@ private:
 	void pointCloudCb(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr pointCloudPtr);
 	//void ptamInfoCb(const ptam_com::ptam_infoPtr ptamInfoPtr);
 	void ptamInfoCb(const std_msgs::BoolPtr ptamInfoPtr);
-	void plannerStatusCb(const std_msgs::StringPtr plannerStatusPtr);
+	//void plannerStatusCb(const std_msgs::StringPtr plannerStatusPtr);
 	void gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelStatesPtr);
 	void globalNextPoseCb(const nav_msgs::PathPtr pathPtr);
 	void initCb(const std_msgs::Empty empty);
