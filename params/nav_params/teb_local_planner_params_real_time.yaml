@@ -11,20 +11,22 @@ TebLocalPlannerROS:
  allow_init_with_backwards_motion: True
  max_global_plan_lookahead_dist: 1.5
  feasibility_check_no_poses: 5
+ publish_feedback: true
+
     
  # Robot
          
- max_vel_x: 0.4
- max_vel_x_backwards: 0.2
+ max_vel_x: 0.3
+ max_vel_x_backwards: 0.15
  max_vel_y: 0.0
- max_vel_theta: 0.3
+ max_vel_theta: 0.25
  acc_lim_x: 0.3
  acc_lim_theta: 0.3
- min_turning_radius: 0.0 # diff-drive robot (can turn on place!)
+ min_turning_radius: 0.33 # diff-drive robot (can turn on place!)
 
  footprint_model:
    type: "circular"
-   radius: 0.20
+   radius: 0.35
 
  # GoalTolerance
     
@@ -34,7 +36,7 @@ TebLocalPlannerROS:
     
  # Obstacles
     
- min_obstacle_dist: 0.25 # This value must also include our robot radius, since footprint_model is set to "point".
+ min_obstacle_dist: 0.2 # This value must also include our robot radius, since footprint_model is set to "point".
  include_costmap_obstacles: True
  costmap_obstacles_behind_robot_dist: 1.5
  obstacle_poses_affected: 30

@@ -18,6 +18,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <sensor_msgs/Joy.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <teb_local_planner/FeedbackMsg.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/Float32MultiArray.h>
@@ -33,6 +34,10 @@
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib_msgs/GoalID.h>
 #include <actionlib/client/simple_action_client.h>
+
+#include <dynamic_reconfigure/DoubleParameter.h>
+#include <dynamic_reconfigure/Reconfigure.h>
+#include <dynamic_reconfigure/Config.h>
 
 using namespace std;
 
@@ -99,6 +104,7 @@ private:
 	visualization_msgs::Marker vslam_path, gazebo_path;
 	//geometry_msgs::Pose  waypointPose;
 	move_base_msgs::MoveBaseGoal recoverygoal;
+	ros::NodeHandle teb_nh_;
 
 	tf::TransformBroadcaster tfBroadcaster;
 
@@ -133,13 +139,18 @@ private:
 	void ptamInfoCb(const std_msgs::BoolPtr ptamInfoPtr);
 	//void plannerStatusCb(const std_msgs::StringPtr plannerStatusPtr);
 	void gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelStatesPtr);
-	void globalNextPoseCb(const nav_msgs::PathPtr pathPtr);
+	void globalNextPoseCb(const teb_local_planner::FeedbackMsg traj);
 	void initCb(const std_msgs::Empty empty);
 	void sendCommandCb(const std_msgs::Empty empty);
 	void ptamStartedCb(const std_msgs::EmptyPtr emptyPtr);
 	//void waypointCb(const geometry_msgs::PoseStampedPtr waypointPosePtr);
 	void goalCb(const geometry_msgs::PoseStampedPtr goalPosePtr);
 
+
+        dynamic_reconfigure::ReconfigureRequest srv_req;
+        dynamic_reconfigure::ReconfigureResponse srv_resp;
+        dynamic_reconfigure::DoubleParameter double_param;
+        dynamic_reconfigure::Config conf;  
 public:
 	JoystickNode();
 	~JoystickNode();

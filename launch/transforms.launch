@@ -1,0 +1,10 @@
+<launch>
+  	<!--node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" required="true">
+  		<param name="publish_frequency" type="double" value="100.0" />
+  	</node-->
+
+	<!-- new_map1 -->
+	<node pkg="tf" type="static_transform_publisher" name="rgb_base1" args="0.0 0.0 -0.3 1.578 0 1.578 world world2D 1000"/> 
+
+	<node pkg="tf" type="static_transform_publisher" name="rgb_base3" args="0.2 0.0 0.5 0 0 0 base_link camera_link 1000"/>
+</launch>
