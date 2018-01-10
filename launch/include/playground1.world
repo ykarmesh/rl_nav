@@ -1115,262 +1115,6 @@
       </link>
       <pose>-10 8.53886 0 0 -0 0</pose>
     </model>
-    <model name='jersey_barrier'>
-      <static>1</static>
-      <link name='link'>
-        <visual name='visual'>
-          <geometry>
-            <mesh>
-              <uri>model://jersey_barrier/meshes/jersey_barrier.dae</uri>
-            </mesh>
-          </geometry>
-        </visual>
-        <collision name='upright'>
-          <pose>0 0 0.5715 0 -0 0</pose>
-          <geometry>
-            <box>
-              <size>4.06542 0.3063 1.143</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-        </collision>
-        <collision name='base'>
-          <pose>0 0 0.032258 0 -0 0</pose>
-          <geometry>
-            <box>
-              <size>4.06542 0.8107 0.064516</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-        </collision>
-        <collision name='base2'>
-          <pose>0 0 0.1 0 -0 0</pose>
-          <geometry>
-            <box>
-              <size>4.06542 0.65 0.1</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-        </collision>
-        <collision name='base3'>
-          <pose>0 0 0.2 0 -0 0</pose>
-          <geometry>
-            <box>
-              <size>4.06542 0.5 0.1</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-        </collision>
-        <collision name='left-angle'>
-          <pose>0 -0.224 0.2401 0.9 -0 0</pose>
-          <geometry>
-            <box>
-              <size>4.06542 0.5 0.064516</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-        </collision>
-        <collision name='right-angle'>
-          <pose>0 0.224 0.2401 -0.9 0 0</pose>
-          <geometry>
-            <box>
-              <size>4.06542 0.5 0.064516</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-        </collision>
-        <velocity_decay>
-          <linear>0</linear>
-          <angular>0</angular>
-        </velocity_decay>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-        <gravity>1</gravity>
-      </link>
-      <pose>2 -10 0 0 -0 0</pose>
-    </model>
-    <model name='jersey_barrier_0'>
-      <static>1</static>
-      <link name='link'>
-        <visual name='visual'>
-          <geometry>
-            <mesh>
-              <uri>model://jersey_barrier/meshes/jersey_barrier.dae</uri>
-            </mesh>
-          </geometry>
-        </visual>
-        <collision name='upright'>
-          <pose>0 0 0.5715 0 -0 0</pose>
-          <geometry>
-            <box>
-              <size>4.06542 0.3063 1.143</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-        </collision>
-        <collision name='base'>
-          <pose>0 0 0.032258 0 -0 0</pose>
-          <geometry>
-            <box>
-              <size>4.06542 0.8107 0.064516</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-        </collision>
-        <collision name='base2'>
-          <pose>0 0 0.1 0 -0 0</pose>
-          <geometry>
-            <box>
-              <size>4.06542 0.65 0.1</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-        </collision>
-        <collision name='base3'>
-          <pose>0 0 0.2 0 -0 0</pose>
-          <geometry>
-            <box>
-              <size>4.06542 0.5 0.1</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-        </collision>
-        <collision name='left-angle'>
-          <pose>0 -0.224 0.2401 0.9 -0 0</pose>
-          <geometry>
-            <box>
-              <size>4.06542 0.5 0.064516</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-        </collision>
-        <collision name='right-angle'>
-          <pose>0 0.224 0.2401 -0.9 0 0</pose>
-          <geometry>
-            <box>
-              <size>4.06542 0.5 0.064516</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-        </collision>
-        <velocity_decay>
-          <linear>0</linear>
-          <angular>0</angular>
-        </velocity_decay>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-        <gravity>1</gravity>
-      </link>
-      <pose>6.54229 -10 0 0 -0 0</pose>
-    </model>
     <model name='nist_elevated_floor_120'>
       <static>1</static>
       <link name='nist_elevated_floor_120'>
@@ -2356,139 +2100,166 @@
       <pose>2 -6 0 0 -0 0</pose>
     </model>
     <state world_name='default'>
-      <sim_time>1937 738000000</sim_time>
-      <real_time>1947 302076016</real_time>
-      <wall_time>1514677051 236998634</wall_time>
+      <sim_time>6605 543000000</sim_time>
+      <real_time>4696 500565606</real_time>
+      <wall_time>1514851484 354173123</wall_time>
       <model name='Construction Cone'>
-        <pose>-11.4141 -3 -9e-06 1e-06 2e-06 8.07794e-28</pose>
+        <pose>-11.3372 -3.00615 -0 0 -1e-06 -0.006963</pose>
         <link name='link'>
-          <pose>-11.4141 -3 -9e-06 1e-06 2e-06 8.07794e-28</pose>
+          <pose>-11.3372 -3.00615 -0 0 -1e-06 -0.006963</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='Construction Cone_0'>
-        <pose>-11.5078 -4 -9e-06 1e-06 1e-06 0</pose>
+        <pose>-11.3851 -4.01319 -7e-06 0 -1e-06 -0.022477</pose>
         <link name='link'>
-          <pose>-11.5078 -4 -9e-06 1e-06 1e-06 0</pose>
+          <pose>-11.3851 -4.01319 -7e-06 0 -1e-06 -0.022477</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='Construction Cone_1'>
-        <pose>-11.4941 -5 0 0 -0 0</pose>
+        <pose>-11.0419 -5.17217 -1e-06 2e-06 -1e-06 -1.04448</pose>
         <link name='link'>
-          <pose>-11.4941 -5 0 0 -0 0</pose>
+          <pose>-11.0419 -5.17217 -1e-06 2e-06 -1e-06 -1.04448</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='Construction Cone_2'>
-        <pose>-11.5642 -6 -9e-06 0 1e-06 0</pose>
+        <pose>-11.5642 -6 -9e-06 3e-06 1e-06 -4.03897e-28</pose>
         <link name='link'>
-          <pose>-11.5642 -6 -9e-06 0 1e-06 0</pose>
+          <pose>-11.5642 -6 -9e-06 3e-06 1e-06 -4.03897e-28</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='Construction Cone_3'>
-        <pose>-11.5498 -7 -0 0 -1e-06 0</pose>
+        <pose>-11.2481 -7.00011 -9e-06 -4.1359e-25 1e-06 -0.002002</pose>
         <link name='link'>
-          <pose>-11.5498 -7 -0 0 -1e-06 0</pose>
+          <pose>-11.2481 -7.00011 -9e-06 -4.1359e-25 1e-06 -0.002002</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='Construction Cone_4'>
-        <pose>-11.5842 -8 1e-06 -3e-06 4e-06 1.61559e-27</pose>
+        <pose>-11.5842 -8 -9e-06 1e-06 1e-06 0</pose>
         <link name='link'>
-          <pose>-11.5842 -8 1e-06 -3e-06 4e-06 1.61559e-27</pose>
+          <pose>-11.5842 -8 -9e-06 1e-06 1e-06 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='Construction Cone_5'>
-        <pose>-11.5407 -9 0 1e-06 1e-06 0</pose>
+        <pose>-11.3322 -8.75521 0 1e-06 -1e-06 0.213374</pose>
         <link name='link'>
-          <pose>-11.5407 -9 0 1e-06 1e-06 0</pose>
+          <pose>-11.3322 -8.75521 0 1e-06 -1e-06 0.213374</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='Construction Cone_6'>
-        <pose>-10.4662 -9 -7e-06 0 -1e-06 0</pose>
+        <pose>-10.4662 -9 -9e-06 0 -0 0</pose>
         <link name='link'>
-          <pose>-10.4662 -9 -7e-06 0 -1e-06 0</pose>
+          <pose>-10.4662 -9 -9e-06 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='Dumpster'>
-        <pose>-1.84772 5.25105 0.000917 0 -2e-06 0</pose>
+        <pose>-1.84772 5.25105 0.000918 5e-06 3e-06 -3.23117e-27</pose>
         <link name='link'>
-          <pose>-1.84772 5.25105 0.000917 0 -2e-06 0</pose>
+          <pose>-1.84772 5.25105 0.000918 5e-06 3e-06 -3.23117e-27</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='Dumpster_0'>
-        <pose>-1.85001 1.22024 0.000918 5e-06 3e-06 -3.23117e-27</pose>
+        <pose>-1.85001 1.22024 0.000914 -2e-06 5e-06 -1e-06</pose>
         <link name='link'>
-          <pose>-1.85001 1.22024 0.000918 5e-06 3e-06 -3.23117e-27</pose>
+          <pose>-1.85001 1.22024 0.000914 -2e-06 5e-06 -1e-06</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='Dumpster_1'>
-        <pose>5 -5 0.000914 -2e-06 5e-06 -1.61559e-27</pose>
+        <pose>5 -5 0.000918 0 1e-06 -1e-06</pose>
         <link name='link'>
-          <pose>5 -5 0.000914 -2e-06 5e-06 -1.61559e-27</pose>
+          <pose>5 -5 0.000918 0 1e-06 -1e-06</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='Dumpster_2'>
+        <pose>8.1661 9.14625 0.00092 -1e-06 2e-06 -0.085578</pose>
+        <link name='link'>
+          <pose>8.1661 9.14625 0.00092 -1e-06 2e-06 -0.085578</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='House 1'>
-        <pose>-16 6 0 0 -0 0</pose>
+        <pose>-15.588 7.00591 0 0 -0 0</pose>
         <link name='link'>
-          <pose>-16 6 0 0 -0 0</pose>
+          <pose>-15.588 7.00591 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='House 1_0'>
-        <pose>15 5 0 0 -0 0</pose>
+        <pose>13.8451 4.83105 0 0 -0 0</pose>
         <link name='link'>
-          <pose>15 5 0 0 -0 0</pose>
+          <pose>13.8451 4.83105 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='House 1_1'>
+        <pose>5.51746 14 0 0 -0 0</pose>
+        <link name='link'>
+          <pose>5.51746 14 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='House 2'>
-        <pose>-3.46088 11.5623 0 0 -0 0</pose>
+        <pose>-4.25976 12.1297 0 0 -0 0</pose>
         <link name='link'>
-          <pose>-3.46088 11.5623 0 0 -0 0</pose>
+          <pose>-4.25976 12.1297 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='House 2_0'>
-        <pose>12 -5 0 0 0 -1.56544</pose>
+        <pose>10.48 -1.59854 0 0 0 -1.56544</pose>
         <link name='link'>
-          <pose>12 -5 0 0 0 -1.56544</pose>
+          <pose>10.48 -1.59854 0 0 0 -1.56544</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='House 2_1'>
+        <pose>10.7917 -10.1095 0 0 -0 1.57217</pose>
+        <link name='link'>
+          <pose>10.7917 -10.1095 0 0 -0 1.57217</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -2503,28 +2274,55 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='Speed limit'>
-        <pose>6.47521 9.49009 0 0 0 -3.01341</pose>
+      <model name='House 3_0'>
+        <pose>-12.8694 -2.60482 0 0 0 -1.62761</pose>
         <link name='link'>
-          <pose>6.47521 9.49009 0 0 0 -3.01341</pose>
+          <pose>-12.8694 -2.60482 0 0 0 -1.62761</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='House 3_1'>
+        <pose>5 -10 0 0 -0 0</pose>
+        <link name='link'>
+          <pose>5 -10 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='Speed limit'>
+        <pose>1.00418 7.82809 -0.593382 0 0 -3.01341</pose>
+        <link name='link'>
+          <pose>1.00418 7.82809 -0.593382 0 0 -3.01341</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='Speed limit_0'>
-        <pose>7.50546 9.40565 0 0 0 -3.1132</pose>
+        <pose>-1007.82 -2845.02 -137.649 0 0 -3.1132</pose>
         <link name='link'>
-          <pose>7.50546 9.40565 0 0 0 -3.1132</pose>
+          <pose>-1007.82 -2845.02 -137.649 0 0 -3.1132</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='Speed limit_1'>
-        <pose>8.54516 9.46637 0 0 0 -3.08048</pose>
+        <pose>-2.91121 0.49376 0 0 0 -3.08048</pose>
         <link name='link'>
-          <pose>8.54516 9.46637 0 0 0 -3.08048</pose>
+          <pose>-2.91121 0.49376 0 0 0 -3.08048</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='Speed limit_2'>
+        <pose>-8 -8 0 0 -0 0</pose>
+        <link name='link'>
+          <pose>-8 -8 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -2540,9 +2338,9 @@
         </link>
       </model>
       <model name='brick_box_3x1x3_0'>
-        <pose>4 10 0 0 -0 0</pose>
+        <pose>1.80913 10.0905 0 0 -0 0</pose>
         <link name='chassis'>
-          <pose>4 10 1.5 0 -0 0</pose>
+          <pose>1.80913 10.0905 1.5 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -2558,16 +2356,16 @@
         </link>
       </model>
       <model name='brick_box_3x1x3_2'>
-        <pose>-7 1.56353 0 0 -0 0.540594</pose>
+        <pose>-6.83187 0.807765 0 0 -0 0.540594</pose>
         <link name='chassis'>
-          <pose>-7 1.56353 1.5 0 -0 0.540594</pose>
+          <pose>-6.83187 0.807765 1.5 0 -0 0.540594</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='brick_box_3x1x3_3'>
-        <pose>-3 -5.49802 0 0 0 -2.11803</pose>
+        <pose>-3 -5.49802 -0 0 0 -2.11803</pose>
         <link name='chassis'>
           <pose>-3 -5.49802 1.5 0 0 -2.11803</pose>
           <velocity>0 0 0 0 -0 0</velocity>
@@ -2584,10 +2382,28 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
+      <model name='brick_box_3x1x3_5'>
+        <pose>-12.9582 -6.92633 0 0 -0 1.55346</pose>
+        <link name='chassis'>
+          <pose>-12.9582 -6.92633 1.5 0 -0 1.55346</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
       <model name='brick_box_3x1x3_6'>
         <pose>-10 -10.4027 0 0 -0 0</pose>
         <link name='chassis'>
           <pose>-10 -10.4027 1.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='brick_box_3x1x3_7'>
+        <pose>-12.0319 -9.19604 0 0 0 -0.855079</pose>
+        <link name='chassis'>
+          <pose>-12.0319 -9.19604 1.5 0 0 -0.855079</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -2603,36 +2419,36 @@
         </link>
       </model>
       <model name='cafe_table'>
-        <pose>2 3 0 0 -0 0</pose>
+        <pose>2.00834 2.69577 0 0 -0 0</pose>
         <link name='link'>
-          <pose>2 3 0 0 -0 0</pose>
+          <pose>2.00834 2.69577 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='cafe_table_0'>
-        <pose>5 3 0 0 -0 0</pose>
+        <pose>3.56079 2.79702 0 0 -0 0</pose>
         <link name='link'>
-          <pose>5 3 0 0 -0 0</pose>
+          <pose>3.56079 2.79702 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='cafe_table_1'>
-        <pose>2 0 0 0 -0 0</pose>
+        <pose>1.99183 0.293279 0 0 -0 0</pose>
         <link name='link'>
-          <pose>2 0 0 0 -0 0</pose>
+          <pose>1.99183 0.293279 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='cafe_table_2'>
-        <pose>5 0 0 0 -0 0</pose>
+        <pose>3.51329 0.339677 0 0 -0 0</pose>
         <link name='link'>
-          <pose>5 0 0 0 -0 0</pose>
+          <pose>3.51329 0.339677 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -2648,18 +2464,18 @@
         </link>
       </model>
       <model name='fire_hydrant_0'>
-        <pose>9 9 0 0 -0 0</pose>
+        <pose>8.14431 7.4768 0 0 -0 0</pose>
         <link name='link'>
-          <pose>9 9 0 0 -0 0</pose>
+          <pose>8.14431 7.4768 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='fire_hydrant_1'>
-        <pose>9.47724 8 0 0 -0 0</pose>
+        <pose>8.11416 6.5757 0 0 -0 0</pose>
         <link name='link'>
-          <pose>9.47724 8 0 0 -0 0</pose>
+          <pose>8.11416 6.5757 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -2674,28 +2490,10 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='jersey_barrier'>
-        <pose>2 -10 0 0 -0 0</pose>
-        <link name='link'>
-          <pose>2 -10 0 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='jersey_barrier_0'>
-        <pose>6.54229 -10 0 0 -0 0</pose>
-        <link name='link'>
-          <pose>6.54229 -10 0 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
       <model name='nist_elevated_floor_120'>
-        <pose>10 0.408356 0 0 -0 0</pose>
+        <pose>7.26946 2.38889 0 0 -0 0</pose>
         <link name='nist_elevated_floor_120'>
-          <pose>10 0.408356 0 0 -0 0</pose>
+          <pose>7.26946 2.38889 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -2720,27 +2518,27 @@
         </link>
       </model>
       <model name='nist_stairs_120'>
-        <pose>-7 8.41233 0 0 -0 0</pose>
+        <pose>-6.42239 9.33474 0 0 -0 0</pose>
         <link name='nist_stairs_120_link'>
-          <pose>-7 8.41233 0 0 -0 0</pose>
+          <pose>-6.42239 9.33474 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='nist_stairs_120_0'>
-        <pose>2 8.53983 0 0 -0 0</pose>
+        <pose>-1.155 8.98679 0 0 -0 0</pose>
         <link name='nist_stairs_120_link'>
-          <pose>2 8.53983 0 0 -0 0</pose>
+          <pose>-1.155 8.98679 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='nist_stairs_120_1'>
-        <pose>9 -9 0 0 -0 0</pose>
+        <pose>6.93343 -2.53688 -0.01191 0 0 -1.59256</pose>
         <link name='nist_stairs_120_link'>
-          <pose>9 -9 0 0 -0 0</pose>
+          <pose>6.93343 -2.53688 -0.01191 0 0 -1.59256</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -2835,9 +2633,386 @@
     </model>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>27.7954 -30.6305 83.124 0 1.1698 1.85626</pose>
+        <pose>-4.36495 -32.4725 56.3642 9.33296e-17 0.933797 1.39549</pose>
         <view_controller>orbit</view_controller>
       </camera>
     </gui>
+    <model name='House 3_0'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>model://house_3/meshes/house_3.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://house_3/meshes/house_3.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://house_3/materials/scripts</uri>
+              <uri>model://house_3/materials/textures</uri>
+              <uri>model://house_1/materials/textures</uri>
+              <name>House_3/Diffuse</name>
+            </script>
+            <shader type='normal_map_object_space'>
+              <normal_map>model://house_1/materials/textures/House_1_Normal.png</normal_map>
+            </shader>
+          </material>
+        </visual>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+      <pose>-13.4259 2.48352 0 0 -0 0</pose>
+    </model>
+    <model name='brick_box_3x1x3_5'>
+      <static>1</static>
+      <link name='chassis'>
+        <pose>0 0 1.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>3 1 3</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://brick_box_3x1x3/meshes/simple_box.dae</uri>
+              <scale>3 1 3</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://brick_box_3x1x3/materials/scripts</uri>
+              <uri>model://brick_box_3x1x3/materials/textures</uri>
+              <name>BrickBox/Diffuse</name>
+            </script>
+          </material>
+        </visual>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+      <pose>-13 -7 0 0 -0 0</pose>
+    </model>
+    <model name='brick_box_3x1x3_7'>
+      <static>1</static>
+      <link name='chassis'>
+        <pose>0 0 1.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>3 1 3</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://brick_box_3x1x3/meshes/simple_box.dae</uri>
+              <scale>3 1 3</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://brick_box_3x1x3/materials/scripts</uri>
+              <uri>model://brick_box_3x1x3/materials/textures</uri>
+              <name>BrickBox/Diffuse</name>
+            </script>
+          </material>
+        </visual>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+      <pose>-14 -11 0 0 -0 0</pose>
+    </model>
+    <model name='House 2_1'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>model://house_2/meshes/house_2.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://house_2/meshes/house_2.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://house_2/materials/scripts</uri>
+              <uri>model://house_2/materials/textures</uri>
+              <uri>model://house_1/materials/textures</uri>
+              <name>House_2/Diffuse</name>
+            </script>
+            <shader type='normal_map_object_space'>
+              <normal_map>model://house_1/materials/textures/House_1_Normal.png</normal_map>
+            </shader>
+          </material>
+        </visual>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+      <pose>12 -11 0 0 -0 0</pose>
+    </model>
+    <model name='House 3_1'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>model://house_3/meshes/house_3.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://house_3/meshes/house_3.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://house_3/materials/scripts</uri>
+              <uri>model://house_3/materials/textures</uri>
+              <uri>model://house_1/materials/textures</uri>
+              <name>House_3/Diffuse</name>
+            </script>
+            <shader type='normal_map_object_space'>
+              <normal_map>model://house_1/materials/textures/House_1_Normal.png</normal_map>
+            </shader>
+          </material>
+        </visual>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+      <pose>5 -10 0 0 -0 0</pose>
+    </model>
+    <model name='Speed limit_2'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <scale>10 10 10</scale>
+              <uri>model://speed_limit_sign/meshes/speed_limit_sign.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <scale>10 10 10</scale>
+              <uri>model://speed_limit_sign/meshes/speed_limit_sign.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+      <pose>-8 -8 0 0 -0 0</pose>
+    </model>
+    <model name='House 1_1'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>model://house_1/meshes/house_1.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://house_1/meshes/house_1.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://house_1/materials/scripts</uri>
+              <uri>model://house_1/materials/textures</uri>
+              <name>House_1/Diffuse</name>
+            </script>
+            <shader type='normal_map_object_space'>
+              <normal_map>House_1_Normal.png</normal_map>
+            </shader>
+          </material>
+        </visual>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+      <pose>5.51746 14 0 0 -0 0</pose>
+    </model>
+    <model name='Dumpster_2'>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>model://dumpster/meshes/dumpster.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://dumpster/meshes/dumpster.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://dumpster/materials/scripts</uri>
+              <uri>model://dumpster/materials/textures</uri>
+              <name>Dumpster/Diffuse</name>
+            </script>
+          </material>
+        </visual>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <self_collide>0</self_collide>
+        <inertial>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+          <mass>1</mass>
+        </inertial>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+      <pose>8 9 0 0 -0 0</pose>
+      <static>0</static>
+    </model>
   </world>
 </sdf>

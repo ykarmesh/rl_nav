@@ -281,8 +281,6 @@ void JoystickNode::poseCb(const geometry_msgs::PoseStampedPtr posePtr)
 		ps.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(curr_angles[0], -PI/2.0 + curr_angles[1], curr_angles[2]);
 	pose_pub.publish(ps);
 
-	
-	tf::transformPose("/odom",ps,ps_odom);
 	tf::StampedTransform tfwo;
 	tf::Pose tf_ps, tf_ps_odom;
 	tf::poseMsgToTF(ps.pose, tf_ps);
@@ -352,7 +350,7 @@ void JoystickNode::globalNextPoseCb(const teb_local_planner::FeedbackMsg traj)
 		{
 			if(dir_change ==  true)
 			{
-				cout<<"direction changed";
+				//cout<<"direction changed";
 				break;
 			}
 			else if(distance>1)
@@ -394,10 +392,6 @@ void JoystickNode::globalNextPoseCb(const teb_local_planner::FeedbackMsg traj)
 	info = ptamInfo;
 	pthread_mutex_unlock(&ptamInfo_mutex);
 
-	//publish the next expected pose and pointcloud
-	next_pose_pub.publish(expected_pose);
-	next_pc_pub.publish(Helper::getPointCloud2AtPosition(expected_pose));
-
 	//if SLAM broke
 	//if(!info.trackingQuality)
 	if(!info.data)
@@ -413,13 +407,13 @@ void JoystickNode::globalNextPoseCb(const teb_local_planner::FeedbackMsg traj)
 	//else if(!MODE.compare("MAP") and learner.predict(stateAction))
 	else if(!MODE.compare("MAP") and Q < Q_THRESH) //if a failure is predicted
 	{
+		planner_reset_pub.publish(actionlib_msgs::GoalID());//stop planner
+		planner_reset_pub.publish(actionlib_msgs::GoalID());//stop planner
 		state = 1;
 		cout<<"predicted break "<< prevQ<<endl;
 		for(auto i: stateAction)
 			cout<<i<<'\t';
 		cout<<endl;
-		planner_reset_pub.publish(actionlib_msgs::GoalID());//stop planner
-		planner_reset_pub.publish(actionlib_msgs::GoalID());//stop planner
 		learner.clear();
 		pthread_mutex_unlock(&globalPlanner_mutex);
 		ros::Duration(0.5).sleep();
@@ -427,6 +421,10 @@ void JoystickNode::globalNextPoseCb(const teb_local_planner::FeedbackMsg traj)
 	}
 	else //cout<<"Q VALUE: "<<Q<<endl;*/
 		pthread_mutex_unlock(&globalPlanner_mutex);
+
+	//publish the next expected pose and pointcloud
+	next_pose_pub.publish(expected_pose);
+	next_pc_pub.publish(Helper::getPointCloud2AtPosition(expected_pose));
 }
 
 /**

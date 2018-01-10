@@ -64,11 +64,11 @@
 		<param name="init_y" type="double" value="-8" />
 		<param name="init_Y" type="double" value="2.617" /> -->
 
-		<!-- New Map2 -->
+		<!-- house_small -->
 		<param name="mode" type="string" value="MAP" />
-		<param name="init_x" type="double" value="-6" />
-		<param name="init_y" type="double" value="-6" />
-		<param name="init_Y" type="double" value="1.0472" /> 
+		<param name="init_x" type="double" value="-2" />
+		<param name="init_y" type="double" value="6" />
+		<param name="init_Y" type="double" value="4.1887" /> 
 
 		<!-- House -->
 		<!--param name="mode" type="string" value="MAP" />

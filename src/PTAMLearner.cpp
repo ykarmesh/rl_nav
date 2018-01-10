@@ -163,12 +163,12 @@ CommandStateActionQ PTAMLearner::getThresholdedClosestAngleStateAction(float qTh
 	for(auto input : possibleTrajectories)
 	{ 	if(get<2>(input) > qThreshold)
 				potentialInputs.push_back(input);
-			else
-			{
-				geometry_msgs::PoseStamped pose = get<0>(input);
-				if(fail_angle>Helper::Quat2RPY(pose.pose.orientation)[2])
-					fail_angle = Helper::Quat2RPY(pose.pose.orientation)[2];
-			}
+		else
+		{
+			geometry_msgs::PoseStamped pose = get<0>(input);
+			if(fail_angle>Helper::Quat2RPY(pose.pose.orientation)[2])
+				fail_angle = Helper::Quat2RPY(pose.pose.orientation)[2];
+		}
 	}
 
 	if(potentialInputs.size()<1)
@@ -196,7 +196,7 @@ CommandStateActionQ PTAMLearner::getThresholdedClosestAngleStateAction(float qTh
 		}
 		if(fail_angle < numeric_limits<float>::infinity())
 		{
-			if(fabs(min_angle-fail_angle)<0.05)
+			if(fabs(fail_angle)-fabs(min_angle)<=0.1)
 			{
 				std::cout << "I have failed you" << '\n';
 				return getBestQStateAction(lastPose);
